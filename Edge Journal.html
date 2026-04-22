@@ -1,0 +1,3292 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Edge Journal</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #070709;
+    --bg-2: #0b0b0e;
+    --bg-3: #131318;
+    --panel: #0d0d12;
+    --panel-2: #16161c;
+    --border: rgba(255,255,255,.07);
+    --border-soft: rgba(255,255,255,.045);
+    --border-strong: rgba(255,255,255,.13);
+    --text: #f2f2f4;
+    --muted: #80808a;
+    --muted-2: #5a5a66;
+    --accent: #ffffff;
+    --accent-dim: rgba(255,255,255,.8);
+    --green: #5fcf8a;
+    --red: #ef6d6d;
+    --amber: #e3b25c;
+    --violet: #b9a4f3;
+    --blue-wash-1: rgba(64,130,240,.085);
+    --blue-wash-2: rgba(92,164,255,.06);
+    --blue-wash-3: rgba(40,90,200,.09);
+    --shadow: 0 24px 60px rgba(0,0,0,.55), 0 2px 8px rgba(0,0,0,.35);
+    --shadow-soft: 0 10px 30px rgba(0,0,0,.45), 0 1px 0 rgba(255,255,255,.02) inset;
+    --glow: 0 0 0 1px rgba(255,255,255,.08), 0 12px 40px rgba(0,0,0,.45);
+    --grad-card: linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,0) 38%, rgba(0,0,0,.15));
+    --grad-panel: linear-gradient(180deg, rgba(255,255,255,.025), rgba(255,255,255,0) 45%);
+    --grad-primary: linear-gradient(180deg, #ffffff 0%, #ececef 100%);
+    --grad-primary-hover: linear-gradient(180deg, #ffffff 0%, #dcdce0 100%);
+    --radius: 16px;
+    --radius-lg: 22px;
+    --ease: cubic-bezier(.22,.61,.36,1);
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", ui-sans-serif, system-ui, "Segoe UI", Roboto, sans-serif;
+    background:
+      radial-gradient(1300px 900px at 10% -15%, var(--blue-wash-1), transparent 60%),
+      radial-gradient(1100px 800px at 110% 5%, var(--blue-wash-2), transparent 58%),
+      radial-gradient(1000px 800px at 85% 110%, var(--blue-wash-3), transparent 60%),
+      radial-gradient(900px 700px at 50% 50%, rgba(120,170,255,.02), transparent 70%),
+      linear-gradient(180deg, #05080f 0%, #03060b 55%, #020408 100%);
+    background-attachment: fixed;
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.45;
+    font-weight: 400;
+    letter-spacing: -.005em;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+  body::before {
+    content: "";
+    position: fixed; inset: 0;
+    pointer-events: none;
+    background: radial-gradient(ellipse at 50% 0%, rgba(120,170,255,.05), transparent 55%);
+    z-index: 0;
+  }
+  body::after {
+    content: "";
+    position: fixed; inset: 0;
+    pointer-events: none;
+    background-image:
+      radial-gradient(rgba(255,255,255,.018) 1px, transparent 1px);
+    background-size: 3px 3px;
+    mix-blend-mode: overlay;
+    opacity: .35;
+    z-index: 0;
+  }
+  .app { position: relative; z-index: 1; }
+  a { color: var(--text); text-decoration: none; border-bottom: 1px solid var(--border-strong); transition: border-color .15s var(--ease); }
+  a:hover { border-color: var(--text); }
+  .app { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+  .sidebar {
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,0) 40%),
+      linear-gradient(180deg, rgba(64,130,240,.06), transparent 60%),
+      rgba(8,12,20,.72);
+    backdrop-filter: blur(22px) saturate(140%);
+    -webkit-backdrop-filter: blur(22px) saturate(140%);
+    border-right: 1px solid var(--border-soft);
+    padding: 20px 14px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+  }
+  .brand {
+    display: flex; align-items: center; gap: 12px;
+    padding: 4px 6px 22px;
+    border-bottom: 1px solid var(--border-soft);
+    margin-bottom: 18px;
+  }
+  .brand .logo {
+    width: 34px; height: 34px; border-radius: 11px;
+    background:
+      radial-gradient(120% 120% at 20% 10%, rgba(120,170,255,.35), transparent 55%),
+      linear-gradient(160deg, #1a2138 0%, #0b0f1c 55%, #05070d 100%);
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:
+      0 0 0 1px rgba(120,170,255,.18),
+      0 1px 0 rgba(255,255,255,.07) inset,
+      0 -6px 12px rgba(0,0,0,.5) inset,
+      0 12px 30px rgba(40,90,200,.22);
+    position: relative;
+    overflow: hidden;
+  }
+  .brand .logo::after {
+    content: "";
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(255,255,255,.1), rgba(255,255,255,0) 45%);
+    pointer-events: none;
+  }
+  .brand .logo svg { position: relative; z-index: 1; }
+  .brand .title { font-weight: 600; letter-spacing:-.01em; font-size: 14px; }
+  .brand .sub { font-size: 11px; color: var(--muted-2); letter-spacing: .01em; }
+  nav .nav-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 12px; margin: 2px 0;
+    border-radius: 10px; cursor: pointer; color: var(--muted);
+    user-select:none;
+    font-size: 13px;
+    transition: background .2s var(--ease), color .2s var(--ease);
+  }
+  nav .nav-item:hover { background: rgba(255,255,255,.035); color: var(--text); }
+  nav .nav-item.active {
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,.025)),
+      linear-gradient(180deg, rgba(64,130,240,.14), rgba(64,130,240,.03));
+    color: var(--text);
+    box-shadow: inset 0 0 0 1px rgba(120,170,255,.18), 0 4px 18px rgba(40,90,200,.18);
+  }
+  nav .nav-item .ico { opacity: .55; width: 14px; }
+  nav .nav-item.active .ico { opacity: 1; }
+  nav .nav-item .ico { width: 18px; text-align: center; opacity: .9; }
+  .main { padding: 32px 40px 80px; max-width: 1400px; }
+  .page { display: none; }
+  .page.active { display: block; animation: fadeIn .35s var(--ease); }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  h1 {
+    font-size: 26px; margin: 0 0 6px; font-weight: 500; letter-spacing: -.02em;
+    background: linear-gradient(180deg, #ffffff 0%, #b8b8c0 120%);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; color: transparent;
+  }
+  h2 { font-size: 16px; margin: 22px 0 12px; color: var(--text); font-weight: 500; letter-spacing: -.01em; }
+  h3 { font-size: 11px; margin: 0 0 14px; color: var(--muted-2); text-transform: uppercase; letter-spacing: .12em; font-weight: 500; }
+  .page-head { display:flex; align-items:center; justify-content: space-between; margin-bottom: 24px; }
+  .page-head .sub { color: var(--muted); font-size: 13px; margin-top: 2px; }
+  .card {
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,0) 38%, rgba(0,0,0,.18)),
+      linear-gradient(180deg, rgba(64,130,240,.05), transparent 60%),
+      var(--panel);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius);
+    padding: 22px;
+    box-shadow:
+      0 1px 0 rgba(255,255,255,.04) inset,
+      0 -1px 0 rgba(0,0,0,.35) inset,
+      0 20px 40px rgba(0,0,0,.35),
+      0 2px 8px rgba(0,0,0,.25);
+    transition: border-color .25s var(--ease), transform .25s var(--ease), box-shadow .25s var(--ease);
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: "";
+    position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.18), transparent);
+    pointer-events: none;
+  }
+  .card:hover {
+    border-color: var(--border);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,.05) inset,
+      0 -1px 0 rgba(0,0,0,.35) inset,
+      0 28px 60px rgba(0,0,0,.5),
+      0 2px 8px rgba(0,0,0,.3);
+  }
+  .grid { display: grid; gap: 14px; }
+  .grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  @media (max-width: 1100px){
+    .grid-4 { grid-template-columns: repeat(2, 1fr); }
+    .grid-3 { grid-template-columns: 1fr; }
+  }
+  .stat { display:flex; flex-direction: column; gap: 6px; }
+  .stat .label { color: var(--muted-2); font-size: 11px; text-transform: uppercase; letter-spacing: .12em; font-weight: 500; }
+  .stat .value { font-size: 28px; font-weight: 500; letter-spacing: -.02em; }
+  .stat .value.green { color: var(--green); }
+  .stat .value.red { color: var(--red); }
+  .stat .value.amber { color: var(--amber); }
+  .row { display: flex; gap: 12px; flex-wrap: wrap; }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field label { font-size: 12px; color: var(--muted); }
+  input, select, textarea, button {
+    font: inherit; color: var(--text);
+    background: linear-gradient(180deg, rgba(255,255,255,.025), rgba(255,255,255,0) 60%), var(--bg-3);
+    border: 1px solid var(--border-soft);
+    border-radius: 10px;
+    padding: 10px 13px;
+    outline: none;
+    transition: border-color .2s var(--ease), box-shadow .2s var(--ease), background .2s var(--ease);
+    box-shadow: 0 1px 0 rgba(255,255,255,.02) inset;
+  }
+  input::placeholder, textarea::placeholder { color: var(--muted-2); }
+  input:hover, select:hover, textarea:hover { border-color: var(--border); }
+  input:focus, select:focus, textarea:focus {
+    border-color: rgba(120,170,255,.35);
+    box-shadow:
+      0 0 0 3px rgba(64,130,240,.16),
+      0 0 0 1px rgba(120,170,255,.25),
+      0 1px 0 rgba(255,255,255,.04) inset;
+  }
+  textarea { resize: vertical; min-height: 80px; line-height: 1.55; }
+  button {
+    cursor: pointer;
+    background: var(--bg-3);
+    border: 1px solid var(--border-soft);
+    color: var(--text);
+    transition: transform .12s var(--ease), border-color .2s var(--ease), background .2s var(--ease);
+  }
+  button:hover {
+    border-color: var(--border-strong);
+    background: #181819;
+  }
+  button:active { transform: scale(.985); }
+  button.primary {
+    background: linear-gradient(180deg, #ffffff 0%, #dedee2 100%);
+    border-color: rgba(255,255,255,.9);
+    color: #0a0a0d;
+    font-weight: 500;
+    letter-spacing: -.005em;
+    box-shadow:
+      0 1px 0 rgba(255,255,255,.8) inset,
+      0 -1px 0 rgba(0,0,0,.1) inset,
+      0 6px 18px rgba(255,255,255,.12),
+      0 2px 6px rgba(0,0,0,.25);
+  }
+  button.primary:hover {
+    background: linear-gradient(180deg, #ffffff 0%, #c9c9cf 100%);
+    border-color: rgba(255,255,255,1);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,.9) inset,
+      0 -1px 0 rgba(0,0,0,.12) inset,
+      0 8px 24px rgba(255,255,255,.18),
+      0 2px 6px rgba(0,0,0,.3);
+  }
+  button.danger {
+    background: transparent;
+    border-color: rgba(239,109,109,.3);
+    color: var(--red);
+  }
+  button.danger:hover { background: rgba(239,109,109,.08); border-color: rgba(239,109,109,.5); }
+  button.ghost { background: transparent; border-color: transparent; color: var(--muted); }
+  button.ghost:hover { background: rgba(255,255,255,.04); color: var(--text); border-color: transparent; }
+  button.pill { border-radius: 999px; padding: 7px 14px; font-size: 12px; }
+  .chip {
+    display:inline-flex; align-items:center; gap:6px;
+    padding: 3px 10px; border-radius: 999px;
+    background: rgba(255,255,255,.03);
+    border: 1px solid var(--border-soft);
+    font-size: 11px; color: var(--muted);
+    letter-spacing: .02em;
+  }
+  .chip.green { color: var(--green); border-color: rgba(95,207,138,.22); background: rgba(95,207,138,.06); }
+  .chip.red   { color: var(--red);   border-color: rgba(239,109,109,.22); background: rgba(239,109,109,.06); }
+  .chip.amber { color: var(--amber); border-color: rgba(227,178,92,.22);  background: rgba(227,178,92,.06); }
+  .chip.violet{ color: #cfc2f0; border-color: rgba(185,164,243,.22); background: rgba(185,164,243,.06); }
+  .chip.blue  { color: #d6d6d8; border-color: var(--border); background: rgba(255,255,255,.04); }
+  .split { display:grid; grid-template-columns: 1.2fr .8fr; gap: 16px; }
+  @media (max-width: 1100px){ .split { grid-template-columns: 1fr; } }
+  .tabs { display:flex; gap: 6px; margin-bottom: 10px; }
+  .tabs .tab { padding: 6px 10px; border-radius: 8px; cursor:pointer; color: var(--muted); border: 1px solid transparent; }
+  .tabs .tab.active { color: var(--text); background: var(--panel-2); border-color: var(--border); }
+  table { width: 100%; border-collapse: separate; border-spacing: 0; }
+  th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border-soft); font-size: 13px; }
+  th { color: var(--muted); font-weight: 500; background: rgba(255,255,255,.03); position: sticky; top: 0; backdrop-filter: blur(6px); }
+  th:first-child { border-top-left-radius: 10px; }
+  th:last-child { border-top-right-radius: 10px; }
+  tr { transition: background .15s var(--ease); }
+  tr:hover td { background: rgba(255,255,255,.03); }
+  .pnl-pos { color: var(--green); }
+  .pnl-neg { color: var(--red); }
+  .stat .value.green, .stat .value.pnl-pos { color: var(--green); }
+  .stat .value.red, .stat .value.pnl-neg { color: var(--red); }
+  .slider-row { display:flex; align-items:center; gap: 10px; }
+  .slider-row input[type=range] {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 8px;
+    border-radius: 999px;
+    padding: 0;
+    background: linear-gradient(90deg,
+      #5fcf8a 0%,
+      #5fcf8a var(--fill, 50%),
+      rgba(255,255,255,.07) var(--fill, 50%),
+      rgba(255,255,255,.07) 100%);
+    box-shadow:
+      0 1px 0 rgba(0,0,0,.5) inset,
+      0 0 0 1px rgba(255,255,255,.05);
+    cursor: pointer;
+    border: none;
+    outline: none;
+    transition: none;
+  }
+  .slider-row input[type=range]::-webkit-slider-runnable-track {
+    height: 8px;
+    background: transparent;
+    border-radius: 999px;
+    border: none;
+  }
+  .slider-row input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px; height: 16px;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #ffffff 0%, #d8d8de 100%);
+    border: 1px solid rgba(255,255,255,.9);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,.8) inset,
+      0 0 0 3px rgba(120,170,255,.18),
+      0 4px 12px rgba(0,0,0,.4);
+    cursor: grab;
+    margin-top: -4px;
+  }
+  .slider-row input[type=range]::-webkit-slider-thumb:active { cursor: grabbing; }
+  .slider-row input[type=range]::-moz-range-track {
+    height: 8px;
+    background: transparent;
+    border: none;
+    border-radius: 999px;
+  }
+  .slider-row input[type=range]::-moz-range-progress {
+    height: 8px;
+    background: linear-gradient(90deg, #5fcf8a, #3ea069);
+    border-radius: 999px;
+  }
+  .slider-row input[type=range]::-moz-range-thumb {
+    width: 16px; height: 16px;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #ffffff 0%, #d8d8de 100%);
+    border: 1px solid rgba(255,255,255,.9);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,.8) inset,
+      0 0 0 3px rgba(120,170,255,.18),
+      0 4px 12px rgba(0,0,0,.4);
+    cursor: grab;
+  }
+  .slider-row input[type=range].disc {
+    background: linear-gradient(90deg,
+      #6aa5ff 0%,
+      #6aa5ff var(--fill, 50%),
+      rgba(255,255,255,.07) var(--fill, 50%),
+      rgba(255,255,255,.07) 100%);
+  }
+  .slider-row input[type=range].disc::-moz-range-progress {
+    background: linear-gradient(90deg, #6aa5ff, #3f7ae0);
+  }
+  .emotion-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .emotion-grid .emo {
+    padding: 9px 12px;
+    text-align: center;
+    border-radius: 999px;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,0) 60%),
+      rgba(255,255,255,.015);
+    border: 1px solid var(--border-soft);
+    cursor: pointer;
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: .01em;
+    transition: transform .2s var(--ease), background .2s var(--ease), border-color .2s var(--ease), color .2s var(--ease), box-shadow .2s var(--ease);
+    user-select: none;
+    box-shadow: 0 1px 0 rgba(255,255,255,.025) inset;
+  }
+  .emotion-grid .emo:hover {
+    border-color: var(--border);
+    color: var(--text);
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.01)),
+      rgba(64,130,240,.05);
+    transform: translateY(-1px);
+  }
+  .emotion-grid .emo.selected {
+    background: linear-gradient(180deg, #ffffff 0%, #d8d8de 100%);
+    border-color: rgba(255,255,255,.9);
+    color: #0a0a0d;
+    font-weight: 500;
+    box-shadow:
+      0 1px 0 rgba(255,255,255,.8) inset,
+      0 6px 20px rgba(255,255,255,.14),
+      0 2px 6px rgba(0,0,0,.25);
+  }
+  .screenshot {
+    max-width: 100%; max-height: 220px; object-fit: contain;
+    border-radius: 8px; border: 1px solid var(--border); background: #000;
+  }
+  .muted { color: var(--muted); }
+  .hr { height: 1px; background: var(--border); margin: 16px 0; }
+  .mic-btn {
+    display:inline-flex; align-items:center; gap:8px;
+    background: rgba(255,255,255,.04);
+    border: 1px solid var(--border-soft);
+    color: var(--text);
+    border-radius: 999px;
+  }
+  .mic-btn:hover { border-color: var(--border-strong); background: rgba(255,255,255,.06); }
+  .mic-btn.listening {
+    background: rgba(239,109,109,.08);
+    border-color: rgba(239,109,109,.4); color: var(--red);
+    animation: pulse 1.8s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100%{ box-shadow: 0 0 0 0 rgba(239,109,109,.3);} 50%{ box-shadow: 0 0 0 10px rgba(239,109,109,0);} }
+  .kbd { background: #0f1522; border: 1px solid var(--border); padding: 1px 6px; border-radius: 4px; font-size: 11px; color: var(--muted); }
+  .toast {
+    position: fixed; bottom: 24px; right: 24px; z-index: 100;
+    background: rgba(20,20,22,.9);
+    border: 1px solid var(--border);
+    padding: 12px 16px; border-radius: 12px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.6);
+    opacity: 0; transform: translateY(8px); transition: all .3s var(--ease);
+    max-width: 360px;
+    backdrop-filter: blur(16px);
+    font-size: 13px;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+  .toast.ok { border-left: 2px solid var(--text); }
+  .toast.err { border-left: 2px solid var(--red); }
+  .toast.info { border-left: 2px solid var(--muted); }
+  .ai-msg {
+    padding: 12px 16px;
+    border-radius: 18px;
+    margin-bottom: 10px;
+    white-space: pre-wrap;
+    max-width: 88%;
+    box-shadow: 0 2px 10px rgba(0,0,0,.22);
+    line-height: 1.5;
+    animation: bubbleIn .22s var(--ease);
+  }
+  @keyframes bubbleIn { from { opacity: 0; transform: translateY(4px) scale(.98); } to { opacity: 1; transform: none; } }
+  .ai-msg.user {
+    background: linear-gradient(180deg, #ffffff 0%, #d8d8de 100%);
+    color: #0a0a0d;
+    border: none;
+    border-bottom-right-radius: 6px;
+    margin-left: auto;
+    box-shadow:
+      0 1px 0 rgba(255,255,255,.9) inset,
+      0 6px 20px rgba(255,255,255,.1),
+      0 2px 6px rgba(0,0,0,.3);
+  }
+  .ai-msg.assistant {
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,0) 45%),
+      linear-gradient(180deg, rgba(64,130,240,.07), transparent 70%),
+      var(--bg-3);
+    border: 1px solid var(--border-soft);
+    border-bottom-left-radius: 6px;
+    box-shadow: 0 1px 0 rgba(255,255,255,.03) inset, 0 4px 14px rgba(0,0,0,.3);
+  }
+  .ai-msg.system  {
+    background: rgba(255,255,255,.02);
+    border: 1px solid var(--border-soft);
+    color: var(--muted);
+    max-width: 100%;
+    border-radius: 12px;
+    font-style: normal;
+  }
+  .scroll-x { overflow-x: auto; }
+  .tag-input { display:flex; gap:6px; flex-wrap: wrap; align-items: center; }
+  .tag-input .tag {
+    background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,0)), var(--bg-3);
+    padding: 4px 10px; border-radius: 999px;
+    border: 1px solid var(--border-soft);
+    font-size: 12px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
+  }
+  .tag-input .tag .x { margin-left: 6px; cursor: pointer; color: var(--muted); opacity: .7; transition: opacity .15s ease; }
+  .tag-input .tag .x:hover { opacity: 1; color: var(--red); }
+  details summary { cursor: pointer; color: var(--muted); padding: 6px 0; }
+  .check-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+  .check-list label {
+    display:flex; align-items:center; gap: 8px;
+    padding: 8px 12px;
+    background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,0)), var(--bg-3);
+    border:1px solid var(--border-soft);
+    border-radius: 999px;
+    font-size: 12px; cursor: pointer;
+    transition: border-color .15s var(--ease), background .15s var(--ease), color .15s var(--ease);
+    color: #cfd6e4;
+  }
+  .check-list label:hover { border-color: var(--border); color: var(--text); }
+  .check-list label:has(input:checked) {
+    background: rgba(239,109,109,.06);
+    border-color: rgba(239,109,109,.3);
+    color: var(--red);
+  }
+  .check-list input[type=checkbox] { accent-color: var(--red); }
+  .filters { display:flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .filters input, .filters select { padding: 6px 8px; font-size: 12px; }
+  .badge {
+    font-size: 10px; padding: 3px 10px; border-radius: 999px;
+    background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,0)), var(--bg-3);
+    border: 1px solid var(--border-soft);
+    color: var(--muted);
+    text-transform: uppercase; letter-spacing: .08em;
+  }
+  .empty { text-align: center; padding: 36px; color: var(--muted); border: 1px dashed var(--border); border-radius: 10px; }
+  .progress { height: 6px; background: rgba(255,255,255,.05); border-radius: 999px; overflow: hidden; box-shadow: 0 1px 0 rgba(0,0,0,.4) inset; }
+  .progress > div { height: 100%; border-radius: 999px; background: linear-gradient(90deg, #ffffff, #c2c2cc); box-shadow: 0 0 12px rgba(255,255,255,.25); transition: width .5s var(--ease); }
+  .micro-bar { display:flex; align-items:center; gap:12px; font-size: 12px; padding: 5px 0; }
+  .micro-bar .lbl { width: 140px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .micro-bar .val { width: 80px; text-align: right; color: var(--text); }
+  .micro-bar .prog { flex: 1; height: 6px; background: rgba(255,255,255,.04); border-radius: 999px; overflow: hidden; box-shadow: 0 1px 0 rgba(0,0,0,.4) inset; position: relative; }
+  .micro-bar .prog > div { height: 100%; border-radius: 999px; transition: width .5s var(--ease); }
+  .micro-bar .prog.split { display: flex; width: 100%; }
+  .micro-bar .prog.split > div { border-radius: 0; height: 100%; flex-shrink: 0; flex-grow: 0; min-width: 0; transition: width .5s var(--ease); }
+  .micro-bar .prog.split > div.win { border-top-left-radius: 999px; border-bottom-left-radius: 999px; }
+  .micro-bar .prog.split > div.loss { border-top-right-radius: 999px; border-bottom-right-radius: 999px; }
+  .micro-bar .prog.split > div.win:last-child { border-top-right-radius: 999px; border-bottom-right-radius: 999px; }
+  .micro-bar .prog.split > div.loss:first-child { border-top-left-radius: 999px; border-bottom-left-radius: 999px; }
+  .micro-bar .prog > div.win  { background: linear-gradient(90deg, #5fcf8a, #3ea069); box-shadow: 0 0 12px rgba(95,207,138,.35); }
+  .micro-bar .prog > div.loss { background: linear-gradient(90deg, #ef6d6d, #c85454); box-shadow: 0 0 12px rgba(239,109,109,.3); }
+  .win-pill {
+    font-size: 11px; padding: 5px 11px; border-radius: 999px;
+    background: transparent;
+    border: 1px solid var(--border-soft);
+    color: var(--muted);
+    transition: all .18s var(--ease);
+  }
+  .win-pill:hover { color: var(--text); border-color: var(--border-strong); background: rgba(64,130,240,.06); }
+  .win-pill.active {
+    background: linear-gradient(180deg, rgba(120,170,255,.22), rgba(64,130,240,.12));
+    border-color: rgba(120,170,255,.45);
+    color: #ffffff;
+    box-shadow: 0 0 0 1px rgba(120,170,255,.25), 0 6px 18px rgba(40,90,200,.25);
+  }
+  .model-stat-grid {
+    display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 10px;
+  }
+  @media (max-width: 900px) { .model-stat-grid { grid-template-columns: repeat(2, 1fr); } }
+  .ms {
+    padding: 12px 14px;
+    border-radius: 12px;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.025), rgba(255,255,255,0) 60%),
+      rgba(255,255,255,.015);
+    border: 1px solid var(--border-soft);
+    box-shadow: 0 1px 0 rgba(255,255,255,.03) inset;
+  }
+  .ms .ms-lbl { font-size: 10px; text-transform: uppercase; letter-spacing: .12em; color: var(--muted-2); font-weight: 500; }
+  .ms .ms-val { font-size: 18px; font-weight: 500; letter-spacing: -.01em; margin-top: 4px; }
+  .ms .ms-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .split-bar { display: flex; height: 6px; width: 100%; border-radius: 999px; overflow: hidden; }
+  .split-bar > span { height: 100%; display: block; flex-shrink: 0; flex-grow: 0; min-width: 0; transition: width .5s var(--ease); }
+  .split-bar .w { background: linear-gradient(90deg, #5fcf8a, #3ea069); box-shadow: 0 0 10px rgba(95,207,138,.3); }
+  .split-bar .l { background: linear-gradient(90deg, #ef6d6d, #c85454); box-shadow: 0 0 10px rgba(239,109,109,.25); }
+  .backtest-panel {
+    margin-top: 14px;
+    padding: 16px 18px;
+    border-radius: 14px;
+    background:
+      linear-gradient(180deg, rgba(120,170,255,.06), rgba(120,170,255,0) 60%),
+      rgba(255,255,255,.02);
+    border: 1px solid rgba(120,170,255,.18);
+    box-shadow: 0 1px 0 rgba(255,255,255,.04) inset, 0 8px 22px rgba(20,40,80,.25);
+  }
+  .backtest-panel.error { border-color: rgba(239,109,109,.3); background: rgba(239,109,109,.04); }
+  .bt-head { display:flex; align-items:center; justify-content: space-between; gap: 10px; }
+  .bt-title { display:flex; align-items:center; gap: 8px; font-size: 12px; text-transform: uppercase; letter-spacing: .14em; color: var(--text); font-weight: 500; }
+  .bt-dot {
+    width: 7px; height: 7px; border-radius: 999px;
+    background: #6aa5ff; box-shadow: 0 0 10px rgba(120,170,255,.8);
+    animation: btPulse 1.2s ease-in-out infinite;
+  }
+  .bt-dot.done { animation: none; background: #5fcf8a; box-shadow: 0 0 10px rgba(95,207,138,.7); }
+  @keyframes btPulse { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
+  .bt-grid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 10px; margin-top: 12px; }
+  @media (max-width: 900px) { .bt-grid { grid-template-columns: repeat(2, 1fr); } }
+  .bt-chips { display:flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+  .bt-summary { margin-top: 12px; font-size: 13px; color: var(--text); line-height: 1.55; }
+  .bt-insights { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 14px; }
+  @media (max-width: 900px) { .bt-insights { grid-template-columns: 1fr; } }
+  .bt-ins-lbl { font-size: 10px; text-transform: uppercase; letter-spacing: .14em; color: var(--muted-2); margin-bottom: 6px; font-weight: 500; }
+  .bt-ins-lbl.up { color: #5fcf8a; }
+  .bt-ins-lbl.down { color: #ef6d6d; }
+  .bt-insights ul { margin: 0; padding-left: 18px; font-size: 12px; color: var(--text); line-height: 1.6; }
+  .bt-insights li { margin-bottom: 4px; }
+
+  /* CHART ANALYSIS page */
+  .ana-dropzone {
+    margin-top: 14px;
+    border: 1.5px dashed rgba(120,170,255,.3);
+    border-radius: 14px;
+    background:
+      linear-gradient(180deg, rgba(120,170,255,.05), rgba(120,170,255,0) 70%),
+      rgba(255,255,255,.015);
+    padding: 26px 18px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+    transition: all .2s var(--ease);
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+  }
+  .ana-dropzone.dragover {
+    border-color: rgba(120,170,255,.65);
+    background:
+      linear-gradient(180deg, rgba(120,170,255,.12), rgba(120,170,255,.03) 70%),
+      rgba(255,255,255,.02);
+    color: var(--text);
+  }
+  .ana-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 14px;
+  }
+  .ana-card {
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,0) 40%),
+      rgba(13, 13, 18, .65);
+    border: 1px solid var(--border-soft);
+    border-radius: 14px;
+    padding: 12px;
+    box-shadow: var(--shadow-soft);
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .ana-thumb {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    background: #000;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--border-soft);
+    display: flex; align-items: center; justify-content: center;
+    cursor: zoom-in;
+  }
+  .ana-thumb img { width: 100%; height: 100%; object-fit: contain; display: block; }
+  .ana-label-row { display: flex; gap: 6px; flex-wrap: wrap; }
+  .ana-label-pill {
+    font-size: 11px; padding: 5px 10px; border-radius: 999px;
+    background: transparent;
+    border: 1px solid var(--border-soft);
+    color: var(--muted);
+    cursor: pointer;
+    transition: all .15s var(--ease);
+  }
+  .ana-label-pill.well.active {
+    background: linear-gradient(180deg, rgba(95,207,138,.25), rgba(62,160,105,.12));
+    border-color: rgba(95,207,138,.5);
+    color: #c0f3d4;
+    box-shadow: 0 0 0 1px rgba(95,207,138,.25);
+  }
+  .ana-label-pill.wrong.active {
+    background: linear-gradient(180deg, rgba(239,109,109,.25), rgba(200,70,70,.12));
+    border-color: rgba(239,109,109,.5);
+    color: #ffc9c9;
+    box-shadow: 0 0 0 1px rgba(239,109,109,.25);
+  }
+  .ana-label-pill.review.active {
+    background: linear-gradient(180deg, rgba(120,170,255,.22), rgba(64,130,240,.12));
+    border-color: rgba(120,170,255,.45);
+    color: #ffffff;
+    box-shadow: 0 0 0 1px rgba(120,170,255,.25);
+  }
+  .ana-card textarea {
+    font-size: 12px; min-height: 54px;
+  }
+  .ana-card-actions {
+    display: flex; justify-content: space-between; gap: 8px; align-items: center;
+  }
+  .ana-card-actions .left { display: flex; gap: 6px; }
+  .analysis-result {
+    margin-top: 4px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background:
+      linear-gradient(180deg, rgba(120,170,255,.05), rgba(120,170,255,0) 60%),
+      rgba(255,255,255,.015);
+    border: 1px solid rgba(120,170,255,.18);
+    font-size: 12.5px;
+    line-height: 1.55;
+    color: var(--text);
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+  .analysis-result.error {
+    border-color: rgba(239,109,109,.35);
+    background: rgba(239,109,109,.05);
+    color: #ffd0d0;
+  }
+  .analysis-result.loading { color: var(--muted); font-style: italic; }
+  .analysis-result h4 { margin: 0 0 6px; font-size: 12px; text-transform: uppercase; letter-spacing: .1em; color: var(--muted-2); font-weight: 500; }
+  .ana-remove {
+    background: transparent; border: 1px solid var(--border-soft);
+    color: var(--muted); font-size: 11px; padding: 5px 10px; border-radius: 999px;
+    transition: all .15s var(--ease); cursor: pointer;
+  }
+  .ana-remove:hover { color: #ef6d6d; border-color: rgba(239,109,109,.4); }
+  .ana-lightbox {
+    position: fixed; inset: 0; background: rgba(0,0,0,.92);
+    z-index: 9999; display: none; align-items: center; justify-content: center;
+    padding: 40px;
+    cursor: zoom-out;
+  }
+  .ana-lightbox.open { display: flex; }
+  .ana-lightbox img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 8px; box-shadow: 0 20px 60px rgba(0,0,0,.8); }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo" aria-label="Edge Journal">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="logoWick" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#cfe1ff"/>
+              <stop offset="100%" stop-color="#5a8ce0"/>
+            </linearGradient>
+            <linearGradient id="logoBar" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#ffffff"/>
+              <stop offset="100%" stop-color="#a7c0ea"/>
+            </linearGradient>
+          </defs>
+          <!-- rising trend line -->
+          <path d="M3 17 L9 11 L13 14 L21 5" stroke="url(#logoWick)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity=".6"/>
+          <!-- three ascending candles -->
+          <rect x="5"  y="13" width="2.2" height="6"  rx="1" fill="url(#logoBar)"/>
+          <line x1="6.1" y1="11" x2="6.1" y2="13" stroke="url(#logoWick)" stroke-width="1" stroke-linecap="round"/>
+          <line x1="6.1" y1="19" x2="6.1" y2="20.5" stroke="url(#logoWick)" stroke-width="1" stroke-linecap="round"/>
+          <rect x="11" y="10" width="2.2" height="9"  rx="1" fill="url(#logoBar)"/>
+          <line x1="12.1" y1="7.5" x2="12.1" y2="10" stroke="url(#logoWick)" stroke-width="1" stroke-linecap="round"/>
+          <line x1="12.1" y1="19" x2="12.1" y2="20.5" stroke="url(#logoWick)" stroke-width="1" stroke-linecap="round"/>
+          <rect x="17" y="6"  width="2.2" height="13" rx="1" fill="url(#logoBar)"/>
+          <line x1="18.1" y1="3.5" x2="18.1" y2="6" stroke="url(#logoWick)" stroke-width="1" stroke-linecap="round"/>
+          <line x1="18.1" y1="19" x2="18.1" y2="20.5" stroke="url(#logoWick)" stroke-width="1" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div>
+        <div class="title">Edge Journal</div>
+        <div class="sub">Precision over prediction</div>
+      </div>
+    </div>
+    <nav id="nav">
+      <div class="nav-item active" data-page="dashboard"><span class="ico">&#9632;</span>Dashboard</div>
+      <div class="nav-item" data-page="new-trade"><span class="ico">+</span>New Trade</div>
+      <div class="nav-item" data-page="journal"><span class="ico">&#9776;</span>Journal</div>
+      <div class="nav-item" data-page="models"><span class="ico">&#9635;</span>My Models</div>
+      <div class="nav-item" data-page="patterns"><span class="ico">&#9679;</span>Patterns</div>
+      <div class="nav-item" data-page="coach"><span class="ico">&#9733;</span>Edge Companion</div>
+      <div class="nav-item" data-page="analysis"><span class="ico">&#9638;</span>Chart Analysis</div>
+      <div class="nav-item" data-page="settings"><span class="ico">&#9881;</span>Settings</div>
+    </nav>
+    <div class="hr"></div>
+    <div style="font-size:11px; color: var(--muted); line-height:1.5;">
+      Tick value: <b id="tickValueDisplay">$5.00</b><br/>
+      Instrument: <b>NQ</b> (Nasdaq-100 Futures)<br/>
+      Data: <b>Local browser</b>
+    </div>
+  </aside>
+
+  <main class="main">
+    <!-- DASHBOARD -->
+    <section class="page active" id="page-dashboard">
+      <div class="page-head">
+        <div>
+          <h1>Dashboard</h1>
+          <div class="sub">Performance and psychology at a glance</div>
+        </div>
+        <div class="row">
+          <button class="pill" id="btnSeed">Load demo data</button>
+          <button class="pill" onclick="go('new-trade')">+ Log trade</button>
+        </div>
+      </div>
+
+      <div class="row" id="dashTfRow" style="gap:4px; margin-bottom: 16px; align-items:center; flex-wrap:wrap;">
+        <span class="muted" style="font-size:11px; margin-right:4px; text-transform:uppercase; letter-spacing:.1em;">Timeframe</span>
+        <button class="pill win-pill" data-dashtf="daily">Daily</button>
+        <button class="pill win-pill" data-dashtf="weekly">Weekly</button>
+        <button class="pill win-pill" data-dashtf="monthly">Monthly</button>
+        <button class="pill win-pill active" data-dashtf="all">All time</button>
+      </div>
+
+      <div class="grid grid-4" style="margin-bottom: 14px;">
+        <div class="card stat"><div class="label">Net P&amp;L</div><div class="value" id="stat-pnl">$0</div><div class="muted" id="stat-trades">0 trades</div></div>
+        <div class="card stat"><div class="label">Win rate</div><div class="value" id="stat-wr">0%</div><div class="muted" id="stat-wl">0W / 0L</div></div>
+        <div class="card stat"><div class="label">Expectancy</div><div class="value" id="stat-exp">$0</div><div class="muted">per trade</div></div>
+        <div class="card stat"><div class="label">Avg R</div><div class="value" id="stat-r">0.0R</div><div class="muted" id="stat-best">Best model: —</div></div>
+      </div>
+
+      <div class="grid grid-2">
+        <div class="card">
+          <h3>Equity curve</h3>
+          <canvas id="equityChart" height="160"></canvas>
+        </div>
+        <div class="card">
+          <h3>P&amp;L by session</h3>
+          <canvas id="sessionChart" height="160"></canvas>
+        </div>
+      </div>
+
+      <div class="grid grid-2" style="margin-top:14px;">
+        <div class="card">
+          <h3>Win rate by model</h3>
+          <div id="modelBars"></div>
+        </div>
+        <div class="card">
+          <h3>Emotion vs outcome</h3>
+          <canvas id="emotionChart" height="160"></canvas>
+          <div class="muted" style="font-size: 11px; margin-top: 6px;">X = confidence · Y = P&amp;L · color = pre-trade emotion</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- NEW TRADE -->
+    <section class="page" id="page-new-trade">
+      <div class="page-head">
+        <div>
+          <h1 id="tradeFormTitle">Log a trade</h1>
+          <div class="sub">NQ-specific. Auto-calculates ticks, $ P&amp;L, and R.</div>
+        </div>
+        <div class="row">
+          <button class="ghost" id="btnClearForm">Clear</button>
+          <button class="primary" id="btnSaveTrade">Save trade</button>
+        </div>
+      </div>
+
+      <div class="split">
+        <div class="card">
+          <h3>Execution</h3>
+          <div class="grid grid-3">
+            <div class="field"><label>Date</label><input type="date" id="f-date"/></div>
+            <div class="field"><label>Time (CT)</label><input type="time" id="f-time"/></div>
+            <div class="field"><label>Direction</label>
+              <select id="f-direction"><option value="long">Long</option><option value="short">Short</option></select>
+            </div>
+            <div class="field"><label>Entry</label><input type="number" step="0.25" id="f-entry"/></div>
+            <div class="field"><label>Stop</label><input type="number" step="0.25" id="f-stop"/></div>
+            <div class="field"><label>Target</label><input type="number" step="0.25" id="f-target"/></div>
+            <div class="field"><label>Exit</label><input type="number" step="0.25" id="f-exit"/></div>
+            <div class="field"><label>Contracts</label><input type="number" min="1" step="1" id="f-contracts" value="1"/></div>
+            <div class="field"><label>Commission ($)</label><input type="number" step="0.01" id="f-commission" value="0"/></div>
+          </div>
+          <div class="hr"></div>
+          <div class="row" style="gap: 20px;">
+            <div><div class="muted" style="font-size:11px">TICKS</div><b id="calc-ticks">0</b></div>
+            <div><div class="muted" style="font-size:11px">P&amp;L</div><b id="calc-pnl">$0</b></div>
+            <div><div class="muted" style="font-size:11px">R MULTIPLE</div><b id="calc-r">0.0R</b></div>
+            <div><div class="muted" style="font-size:11px">OUTCOME</div><b id="calc-outcome">—</b></div>
+          </div>
+
+          <h3 style="margin-top:18px">Setup &amp; model</h3>
+          <div class="grid grid-3">
+            <div class="field" style="grid-column: span 2;"><label>Model / playbook</label>
+              <select id="f-model-select"></select>
+              <input id="f-model" type="hidden"/>
+              <input id="f-model-freeform" placeholder="Custom model name" style="display:none; margin-top:6px;"/>
+            </div>
+            <div class="field"><label>Session</label>
+              <select id="f-session">
+                <option>Asia</option><option>London</option><option>NY AM</option>
+                <option>NY Lunch</option><option>NY PM</option>
+              </select>
+            </div>
+            <div class="field"><label>Timeframe</label>
+              <select id="f-timeframe">
+                <option>1m</option><option>2m</option><option>3m</option>
+                <option>5m</option><option>15m</option><option>1h</option><option>4h</option>
+              </select>
+            </div>
+            <div class="field"><label>HTF bias</label>
+              <select id="f-bias">
+                <option value="bullish">Bullish</option>
+                <option value="bearish">Bearish</option>
+                <option value="neutral">Neutral</option>
+              </select>
+            </div>
+            <div class="field" style="grid-column: span 2;"><label>Key levels / context</label>
+              <input id="f-levels" placeholder="e.g., NWOG, PDH, Asia high sweep, daily FVG"/>
+            </div>
+          </div>
+
+          <div id="modelRulesBox" style="margin-top: 14px; display: none;">
+            <h3 style="margin-top:0">Model rule checklist</h3>
+            <div class="muted" style="font-size: 11px; margin-bottom: 8px;">
+              Tick the rules you followed. Unchecked = you went against your own model.
+            </div>
+            <div id="modelRulesChecklist" class="check-list"></div>
+            <div id="modelRulesAdherence" class="muted" style="font-size: 12px; margin-top: 8px;"></div>
+          </div>
+
+          <h3 style="margin-top:18px">Narrative &amp; lessons</h3>
+          <div class="row" style="margin-bottom: 8px;">
+            <button class="mic-btn" id="micNarrative">&#127908; Dictate narrative</button>
+            <button class="mic-btn" id="micLessons">&#127908; Dictate lessons</button>
+            <span class="muted" style="font-size: 11px;" id="voiceStatus">Voice: idle</span>
+          </div>
+          <div class="field"><label>Trade narrative (what you saw and why you took it)</label>
+            <textarea id="f-narrative" placeholder="Describe the setup, timing, confluences, and execution..."></textarea>
+          </div>
+          <div class="field" style="margin-top: 10px;"><label>Lessons / takeaways</label>
+            <textarea id="f-lessons" placeholder="What would improve this trade next time?"></textarea>
+          </div>
+          <div class="field" style="margin-top: 10px;"><label>Chart screenshot (paste or upload)</label>
+            <input type="file" id="f-screenshot" accept="image/*"/>
+            <div id="screenshotsPreview" class="row" style="margin-top: 8px;"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Emotions &amp; psychology</h3>
+          <div style="margin-bottom:10px;">
+            <div class="muted" style="font-size:12px; margin-bottom:4px;">Pre-trade emotion</div>
+            <div class="emotion-grid" data-emo="pre"></div>
+          </div>
+          <div style="margin-bottom:10px;">
+            <div class="muted" style="font-size:12px; margin-bottom:4px;">Mid-trade emotion</div>
+            <div class="emotion-grid" data-emo="mid"></div>
+          </div>
+          <div>
+            <div class="muted" style="font-size:12px; margin-bottom:4px;">Post-trade emotion</div>
+            <div class="emotion-grid" data-emo="post"></div>
+          </div>
+
+          <div class="hr"></div>
+          <div class="field" style="margin-bottom:10px;">
+            <label>Confidence in setup <span id="confVal" class="muted">5/10</span></label>
+            <div class="slider-row">
+              <span class="muted" style="font-size:11px;">1</span>
+              <input type="range" min="1" max="10" step="1" id="f-confidence" value="5"/>
+              <span class="muted" style="font-size:11px;">10</span>
+            </div>
+          </div>
+          <div class="field" style="margin-bottom:10px;">
+            <label>Discipline score <span id="discVal" class="muted">5/10</span></label>
+            <div class="slider-row">
+              <span class="muted" style="font-size:11px;">1</span>
+              <input type="range" min="1" max="10" step="1" id="f-discipline" value="5" class="disc"/>
+              <span class="muted" style="font-size:11px;">10</span>
+            </div>
+          </div>
+
+          <h3 style="margin-top:14px">Rule violations</h3>
+          <div class="check-list" id="ruleViolations"></div>
+
+          <h3 style="margin-top:14px">Tags</h3>
+          <div class="tag-input" id="tagContainer">
+            <input id="tagInput" placeholder="Add tag and press Enter" style="flex: 1; min-width: 120px;"/>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- JOURNAL -->
+    <section class="page" id="page-journal">
+      <div class="page-head">
+        <div>
+          <h1>Journal</h1>
+          <div class="sub">Every trade, filterable. Click a row to edit.</div>
+        </div>
+        <div class="row">
+          <button class="pill" id="btnExport">Export JSON</button>
+          <button class="pill" id="btnImport">Import JSON</button>
+          <input type="file" id="importFile" accept="application/json" style="display:none"/>
+        </div>
+      </div>
+      <div class="card">
+        <div class="filters" style="margin-bottom: 10px;">
+          <input id="filterSearch" placeholder="Search model, notes, tags..." style="flex:1; min-width:200px;"/>
+          <select id="filterSession"><option value="">All sessions</option></select>
+          <select id="filterOutcome">
+            <option value="">All outcomes</option>
+            <option value="win">Wins</option>
+            <option value="loss">Losses</option>
+            <option value="be">Break-even</option>
+          </select>
+          <select id="filterDirection">
+            <option value="">Both directions</option>
+            <option value="long">Long</option>
+            <option value="short">Short</option>
+          </select>
+        </div>
+        <div class="scroll-x">
+          <table id="journalTable">
+            <thead>
+              <tr>
+                <th>Date</th><th>Time</th><th>Dir</th><th>Model</th><th>Adh</th><th>Session</th>
+                <th>Ticks</th><th>P&amp;L</th><th>R</th><th>Conf</th><th>Disc</th><th>Emotion</th><th></th>
+              </tr>
+            </thead>
+            <tbody id="journalBody"></tbody>
+          </table>
+        </div>
+        <div id="journalEmpty" class="empty" style="display:none;">
+          No trades yet. <a href="#" onclick="go('new-trade');return false;">Log your first trade.</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- MY MODELS -->
+    <section class="page" id="page-models">
+      <div class="page-head">
+        <div>
+          <h1>My Models</h1>
+          <div class="sub">Your personal playbooks. Edge Companion checks every trade against these rules.</div>
+        </div>
+        <button class="primary" id="btnNewModel">+ New model</button>
+      </div>
+
+      <div id="modelEditor" class="card" style="display:none; margin-bottom: 14px;">
+        <h3 id="modelEditorTitle">New model</h3>
+        <div class="grid grid-2">
+          <div class="field"><label>Model name</label><input id="m-name" placeholder="e.g., Silver Bullet, My ORB, NYAM FVG Sweep"/></div>
+          <div class="field"><label>One-line description</label><input id="m-desc" placeholder="What does this setup look like?"/></div>
+        </div>
+        <div class="grid grid-2" style="margin-top: 10px;">
+          <div class="field"><label>Allowed sessions</label>
+            <div id="m-sessions" class="tag-input" style="padding: 6px; border: 1px solid var(--border-soft); border-radius: 10px; min-height: 38px;"></div>
+          </div>
+          <div class="field"><label>Allowed timeframes</label>
+            <div id="m-timeframes" class="tag-input" style="padding: 6px; border: 1px solid var(--border-soft); border-radius: 10px; min-height: 38px;"></div>
+          </div>
+        </div>
+
+        <div class="field" style="margin-top: 10px;">
+          <label>Entry rules (one per line — these become the trade-entry checklist)</label>
+          <textarea id="m-entryRules" placeholder="e.g.:
+HTF bias aligned (daily/4h)
+Liquidity sweep before entry
+Entry off a 5m FVG
+Within the 10:00-11:00 ET window
+Stop beyond the swept high/low"></textarea>
+        </div>
+        <div class="field" style="margin-top: 10px;">
+          <label>Exit rules</label>
+          <textarea id="m-exitRules" placeholder="e.g.:
+Take 50% at 1R
+Trail remainder to breakeven after 1R
+Full target at nearest PD array
+Hard stop — never move stop against me"></textarea>
+        </div>
+        <div class="field" style="margin-top: 10px;">
+          <label>Invalidation — when to call it "not a valid setup"</label>
+          <textarea id="m-invalidation" placeholder="e.g., If price closes back inside the sweep range on the 5m, or if the FVG is filled without entry."></textarea>
+        </div>
+        <div class="field" style="margin-top: 10px;">
+          <label>Notes (freeform)</label>
+          <textarea id="m-notes" placeholder="Anything else — confluences, psychology cues, when NOT to take it"></textarea>
+        </div>
+        <div class="row" style="margin-top: 12px;">
+          <button class="primary" id="btnSaveModel">Save model</button>
+          <button class="ghost" id="btnCancelModel">Cancel</button>
+        </div>
+      </div>
+
+      <div id="modelsList" class="grid grid-2"></div>
+      <div id="modelsEmpty" class="empty" style="display:none;">
+        No models yet. Click <b>+ New model</b> to define your first playbook.
+      </div>
+    </section>
+
+    <!-- PATTERNS -->
+    <section class="page" id="page-patterns">
+      <div class="page-head">
+        <div>
+          <h1>Pattern recognition</h1>
+          <div class="sub">Local analysis: what's working, what's leaking edge.</div>
+        </div>
+        <button class="pill" id="btnRefreshPatterns">Refresh</button>
+      </div>
+      <div class="grid grid-2">
+        <div class="card">
+          <h3>Top strengths</h3>
+          <div id="strengthsList"></div>
+        </div>
+        <div class="card">
+          <h3>Top leaks</h3>
+          <div id="leaksList"></div>
+        </div>
+      </div>
+      <div class="grid grid-2" style="margin-top: 14px;">
+        <div class="card">
+          <h3>By model</h3>
+          <div id="byModelTable"></div>
+        </div>
+        <div class="card">
+          <h3>By session</h3>
+          <div id="bySessionTable"></div>
+        </div>
+      </div>
+      <div class="grid grid-2" style="margin-top: 14px;">
+        <div class="card">
+          <h3>By pre-trade emotion</h3>
+          <div id="byEmotionTable"></div>
+        </div>
+        <div class="card">
+          <h3>Rule-violation impact</h3>
+          <div id="violationTable"></div>
+        </div>
+      </div>
+
+      <div class="grid grid-1" style="margin-top: 14px;">
+        <div class="card">
+          <h3>Most profitable days of the week</h3>
+          <canvas id="dowChart" height="130"></canvas>
+          <div id="dowCaption" class="muted" style="font-size: 11px; margin-top: 8px;">Net P&amp;L by weekday · green = net profit · red = net loss.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- COACH -->
+    <section class="page" id="page-coach">
+      <div class="page-head">
+        <div>
+          <h1>Edge Companion</h1>
+          <div class="sub">Powered by Claude · reads your journal to give improvement advice</div>
+        </div>
+        <div class="row">
+          <button class="pill" id="btnFullReview">Full review</button>
+          <button class="pill" id="btnClearChat">Clear chat</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div id="chatBox" style="max-height: 520px; overflow-y: auto;"></div>
+        <div class="hr"></div>
+        <div class="row" style="align-items: flex-end;">
+          <textarea id="chatInput" placeholder="Ask: 'What's my biggest leak?' or 'Review last 10 trades'..." style="flex:1; min-height: 60px;"></textarea>
+          <button class="primary" id="btnAsk">Send</button>
+        </div>
+        <div class="muted" style="font-size: 11px; margin-top: 8px;">
+          Edge Companion sees a summary of your trades and your local pattern analysis. Your API key is stored only in this browser.
+        </div>
+      </div>
+    </section>
+
+    <!-- CHART ANALYSIS -->
+    <section class="page" id="page-analysis">
+      <div class="page-head">
+        <div>
+          <h1>Chart Analysis</h1>
+          <div class="sub">Upload screenshots of your trades. Claude vision reviews what went well, what went wrong, and can compare trades pic-by-pic.</div>
+        </div>
+        <div class="row">
+          <button class="pill win-pill" id="btnAnaModeIndividual">Individual</button>
+          <button class="pill win-pill active" id="btnAnaModeCompare">Compare</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="row" style="justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+          <div>
+            <h3 style="margin: 0;">Upload trade screenshots</h3>
+            <div class="muted" style="font-size: 11px; margin-top: 4px;">Drop, paste (Ctrl/Cmd+V on this page), or click to upload. Tag each pic as <b>what went well</b> or <b>what went wrong</b>.</div>
+          </div>
+          <div class="row">
+            <button class="ghost" id="btnAnaClear">Clear all</button>
+            <label class="primary" style="cursor: pointer;">
+              + Upload images
+              <input type="file" id="f-ana-upload" accept="image/*" multiple style="display:none"/>
+            </label>
+          </div>
+        </div>
+        <div id="anaDropZone" class="ana-dropzone">
+          <div style="font-size: 26px; opacity: .5;">&#8679;</div>
+          <div>Drop trade screenshots here or click <b>Upload images</b></div>
+          <div class="muted" style="font-size: 11px;">PNG, JPG, WEBP · multiple at once OK</div>
+        </div>
+      </div>
+
+      <div id="anaCompareBar" class="card" style="margin-top: 14px; display: none;">
+        <div class="row" style="justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+          <div>
+            <h3 style="margin: 0;">Compare mode</h3>
+            <div class="muted" style="font-size: 11px; margin-top: 4px;">Claude will look at every uploaded image together and give you a side-by-side read — what's consistent, what's different, and what to repeat vs. avoid.</div>
+          </div>
+          <div class="row">
+            <button class="primary" id="btnAnaCompare">Compare trades</button>
+          </div>
+        </div>
+        <div id="anaCompareResult" class="analysis-result" style="margin-top: 14px; display: none;"></div>
+      </div>
+
+      <div id="anaItems" class="ana-grid" style="margin-top: 14px;"></div>
+
+      <div id="anaEmpty" class="muted" style="margin-top: 20px; text-align: center; padding: 40px 20px;">
+        No images yet. Upload your first trade screenshot to get started.
+      </div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section class="page" id="page-settings">
+      <div class="page-head">
+        <div><h1>Settings</h1><div class="sub">Keys, tick value, data management</div></div>
+      </div>
+
+      <div class="grid grid-2">
+        <div class="card">
+          <h3>Anthropic (Claude) API</h3>
+          <div class="field" style="margin-bottom:10px;">
+            <label>API key (sk-ant-...)</label>
+            <input type="password" id="s-apikey" placeholder="Your Anthropic API key"/>
+          </div>
+          <div class="field" style="margin-bottom:10px;">
+            <label>Model</label>
+            <select id="s-model">
+              <option value="claude-sonnet-4-6">claude-sonnet-4-6 (Recommended)</option>
+              <option value="claude-opus-4-6">claude-opus-4-6</option>
+              <option value="claude-haiku-4-5-20251001">claude-haiku-4-5</option>
+            </select>
+          </div>
+          <div class="row">
+            <button class="primary" id="btnSaveKey">Save</button>
+            <button class="ghost" id="btnTestKey">Test connection</button>
+          </div>
+          <div class="muted" style="font-size: 11px; margin-top: 8px;">
+            Calls go directly from this page to <code>api.anthropic.com</code> with the header
+            <code>anthropic-dangerous-direct-browser-access: true</code>. For production use, proxy this through your own backend.
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Instrument &amp; risk</h3>
+          <div class="field" style="margin-bottom:10px;">
+            <label>Tick size (NQ = 0.25)</label>
+            <input type="number" step="0.01" id="s-tickSize" value="0.25"/>
+          </div>
+          <div class="field" style="margin-bottom:10px;">
+            <label>Tick value in $ (NQ = $5)</label>
+            <input type="number" step="0.01" id="s-tickValue" value="5"/>
+          </div>
+          <div class="field" style="margin-bottom:10px;">
+            <label>Default risk per trade ($)</label>
+            <input type="number" step="1" id="s-riskDollars" value="200"/>
+          </div>
+          <button class="primary" id="btnSaveRisk">Save</button>
+        </div>
+      </div>
+
+      <div class="grid grid-2" style="margin-top: 14px;">
+        <div class="card">
+          <h3>Data</h3>
+          <div class="row">
+            <button id="btnExport2">Export JSON</button>
+            <button id="btnImport2">Import JSON</button>
+            <button class="danger" id="btnWipe">Wipe everything</button>
+          </div>
+          <div class="muted" style="font-size: 11px; margin-top: 8px;">All data lives in this browser's localStorage. Export regularly.</div>
+        </div>
+        <div class="card">
+          <h3>About</h3>
+          <div class="muted" style="font-size: 12px; line-height: 1.6;">
+            Built for NQ (Nasdaq-100 futures) scalpers and day traders.
+            Voice input uses the browser's Web Speech API (works best in Chrome).
+            Edge Companion focuses on <i>process</i> — model discipline, emotional state, and rule adherence — rather than predictions.
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="ana-lightbox" id="anaLightbox"><img id="anaLightboxImg" src="" alt=""/></div>
+
+<script>
+/* =========================================================================
+   DATA LAYER
+   ========================================================================= */
+const LS_TRADES = 'nqj.trades.v1';
+const LS_SETTINGS = 'nqj.settings.v1';
+const LS_CHAT = 'nqj.chat.v1';
+const LS_MODELS = 'nqj.models.v1';
+
+const EMOTIONS = [
+  'Calm','Confident','Focused','Neutral',
+  'Anxious','Hesitant','Hopeful','FOMO',
+  'Greedy','Frustrated','Revenge','Tilted',
+  'Disappointed','Relieved','Euphoric','Fearful'
+];
+const RULE_VIOLATIONS = [
+  'No A+ setup','Traded outside session','Moved stop against me',
+  'Oversized position','Chased entry','No clear invalidation',
+  'Revenge trade','Traded news without plan','Exited too early',
+  'Did not take profit at target'
+];
+const SESSIONS = ['Asia','London','NY AM','NY Lunch','NY PM'];
+
+let trades = loadJSON(LS_TRADES, []);
+let settings = loadJSON(LS_SETTINGS, {
+  apiKey: '',
+  model: 'claude-sonnet-4-6',
+  tickSize: 0.25,
+  tickValue: 5,
+  riskDollars: 200
+});
+let chatHistory = loadJSON(LS_CHAT, []);
+let models = loadJSON(LS_MODELS, []);
+let editingId = null;
+let editingModelId = null;
+let dashTf = 'all';   // dashboard timeframe filter: daily | weekly | monthly | all
+let analysisItems = []; // chart analysis uploads: [{id, dataUrl, label, note, mediaType, analysis, loading, error}]
+let analysisCompareResult = null; // string of latest comparison analysis
+let analysisCompareLoading = false;
+let analysisCompareError = null;
+
+function loadJSON(k, fallback){ try { return JSON.parse(localStorage.getItem(k)) ?? fallback; } catch { return fallback; } }
+function saveJSON(k, v){ localStorage.setItem(k, JSON.stringify(v)); }
+function uid(){ return Math.random().toString(36).slice(2,10) + Date.now().toString(36).slice(-4); }
+function fmtMoney(n){ const s = n<0?'-':''; return s+'$'+Math.abs(n).toLocaleString(undefined,{maximumFractionDigits:2}); }
+function fmtSigned(n){ return (n>=0?'+':'')+fmtMoney(n).replace('-',''); }
+function clamp(n,a,b){ return Math.max(a, Math.min(b, n)); }
+
+/* =========================================================================
+   TRADE MATH
+   ========================================================================= */
+function computeTicks(t){
+  const { direction, entry, exit } = t;
+  if (entry==null || exit==null) return 0;
+  const delta = direction === 'long' ? (exit - entry) : (entry - exit);
+  return Math.round(delta / settings.tickSize);
+}
+function computePnL(t){
+  const ticks = computeTicks(t);
+  const contracts = Number(t.contracts) || 1;
+  return ticks * settings.tickValue * contracts - (Number(t.commission)||0);
+}
+function computeR(t){
+  if (t.entry==null || t.stop==null) return 0;
+  const risk = Math.abs(t.entry - t.stop);
+  if (!risk) return 0;
+  const reward = t.direction==='long' ? (t.exit - t.entry) : (t.entry - t.exit);
+  return reward / risk;
+}
+function outcome(t){
+  const p = computePnL(t);
+  if (p > 0) return 'win';
+  if (p < 0) return 'loss';
+  return 'be';
+}
+
+/* =========================================================================
+   ROUTING
+   ========================================================================= */
+function go(page){
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.page === page));
+  if (page === 'dashboard') renderDashboard();
+  if (page === 'journal') renderJournal();
+  if (page === 'patterns') renderPatterns();
+  if (page === 'coach') renderChat();
+  if (page === 'settings') renderSettings();
+  if (page === 'models') renderModels();
+  if (page === 'analysis') renderAnalysisPage();
+  if (page === 'new-trade'){
+    populateModelSelect();
+    if (!editingId) resetForm();
+  }
+}
+document.querySelectorAll('.nav-item').forEach(n => n.addEventListener('click', () => go(n.dataset.page)));
+
+/* =========================================================================
+   FORM
+   ========================================================================= */
+// Emotion grids
+function renderEmotionGrids(){
+  ['pre','mid','post'].forEach(phase => {
+    const grid = document.querySelector(`.emotion-grid[data-emo="${phase}"]`);
+    grid.innerHTML = '';
+    EMOTIONS.forEach(e => {
+      const el = document.createElement('div');
+      el.className = 'emo'; el.textContent = e; el.dataset.value = e;
+      el.addEventListener('click', () => {
+        grid.querySelectorAll('.emo').forEach(x => x.classList.remove('selected'));
+        el.classList.add('selected');
+      });
+      grid.appendChild(el);
+    });
+  });
+}
+function renderRuleViolations(){
+  const host = document.getElementById('ruleViolations');
+  host.innerHTML = '';
+  RULE_VIOLATIONS.forEach(r => {
+    const l = document.createElement('label');
+    l.innerHTML = `<input type="checkbox" value="${r}"/> ${r}`;
+    host.appendChild(l);
+  });
+}
+renderEmotionGrids();
+renderRuleViolations();
+
+// Tags
+const tagState = new Set();
+function renderTags(){
+  const container = document.getElementById('tagContainer');
+  container.querySelectorAll('.tag').forEach(x => x.remove());
+  const input = document.getElementById('tagInput');
+  [...tagState].forEach(t => {
+    const el = document.createElement('span');
+    el.className = 'tag';
+    el.innerHTML = `${t}<span class="x" data-t="${t}">✕</span>`;
+    el.querySelector('.x').addEventListener('click', () => { tagState.delete(t); renderTags(); });
+    container.insertBefore(el, input);
+  });
+}
+document.getElementById('tagInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && e.target.value.trim()){
+    tagState.add(e.target.value.trim()); e.target.value = ''; renderTags();
+    e.preventDefault();
+  }
+});
+
+// Sliders live-update
+function setSliderFill(el){
+  const min = parseFloat(el.min || 0);
+  const max = parseFloat(el.max || 100);
+  const v = parseFloat(el.value || 0);
+  const pct = ((v - min) / (max - min)) * 100;
+  el.style.setProperty('--fill', pct + '%');
+}
+document.getElementById('f-confidence').addEventListener('input', e => {
+  document.getElementById('confVal').textContent = e.target.value + '/10';
+  setSliderFill(e.target);
+});
+document.getElementById('f-discipline').addEventListener('input', e => {
+  document.getElementById('discVal').textContent = e.target.value + '/10';
+  setSliderFill(e.target);
+});
+// Initialize both on load
+setSliderFill(document.getElementById('f-confidence'));
+setSliderFill(document.getElementById('f-discipline'));
+
+// Live P&L
+['f-direction','f-entry','f-stop','f-target','f-exit','f-contracts','f-commission'].forEach(id => {
+  document.getElementById(id).addEventListener('input', updateCalc);
+});
+function updateCalc(){
+  const t = readForm(false);
+  const ticks = computeTicks(t);
+  const pnl = computePnL(t);
+  const r = computeR(t);
+  document.getElementById('calc-ticks').textContent = (ticks>=0?'+':'')+ticks;
+  const pnlEl = document.getElementById('calc-pnl');
+  pnlEl.textContent = fmtSigned(pnl);
+  pnlEl.className = pnl>=0 ? 'pnl-pos':'pnl-neg';
+  document.getElementById('calc-r').textContent = (r>=0?'+':'')+r.toFixed(2)+'R';
+  document.getElementById('calc-outcome').textContent = pnl>0?'WIN':pnl<0?'LOSS':'BE';
+}
+
+// Screenshots (support upload + paste)
+let pendingScreens = [];
+document.getElementById('f-screenshot').addEventListener('change', e => {
+  const f = e.target.files[0]; if (!f) return;
+  const reader = new FileReader();
+  reader.onload = () => { pendingScreens.push(reader.result); renderScreenshots(); };
+  reader.readAsDataURL(f);
+});
+window.addEventListener('paste', e => {
+  if (!document.getElementById('page-new-trade').classList.contains('active')) return;
+  const items = e.clipboardData && e.clipboardData.items || [];
+  for (const it of items){
+    if (it.type && it.type.startsWith('image/')){
+      const blob = it.getAsFile(); const r = new FileReader();
+      r.onload = () => { pendingScreens.push(r.result); renderScreenshots(); };
+      r.readAsDataURL(blob);
+    }
+  }
+});
+function renderScreenshots(){
+  const host = document.getElementById('screenshotsPreview');
+  host.innerHTML = '';
+  pendingScreens.forEach((src, i) => {
+    const wrap = document.createElement('div');
+    wrap.style.position = 'relative';
+    wrap.innerHTML = `<img src="${src}" class="screenshot"/>
+      <button class="pill" style="position:absolute; top: 4px; right: 4px;" data-i="${i}">Remove</button>`;
+    wrap.querySelector('button').addEventListener('click', () => {
+      pendingScreens.splice(i,1); renderScreenshots();
+    });
+    host.appendChild(wrap);
+  });
+}
+
+function readForm(includeAll=true){
+  const selectedEmo = phase => {
+    const el = document.querySelector(`.emotion-grid[data-emo="${phase}"] .emo.selected`);
+    return el ? el.dataset.value : '';
+  };
+  const violations = [...document.querySelectorAll('#ruleViolations input:checked')].map(i => i.value);
+  // Model rule compliance
+  const modelSelectVal = document.getElementById('f-model-select').value;
+  const modelId = (modelSelectVal && modelSelectVal !== '__free__') ? modelSelectVal : '';
+  const ruleChecklist = {};
+  let ruleAdherence = null;
+  const ruleChecks = [...document.querySelectorAll('#modelRulesChecklist input')];
+  if (ruleChecks.length){
+    ruleChecks.forEach(cb => { ruleChecklist[cb.dataset.rule] = cb.checked; });
+    const followed = ruleChecks.filter(c => c.checked).length;
+    ruleAdherence = followed / ruleChecks.length;
+  }
+  const t = {
+    date: document.getElementById('f-date').value,
+    time: document.getElementById('f-time').value,
+    direction: document.getElementById('f-direction').value,
+    entry: parseFloat(document.getElementById('f-entry').value) || null,
+    stop: parseFloat(document.getElementById('f-stop').value) || null,
+    target: parseFloat(document.getElementById('f-target').value) || null,
+    exit: parseFloat(document.getElementById('f-exit').value) || null,
+    contracts: parseInt(document.getElementById('f-contracts').value) || 1,
+    commission: parseFloat(document.getElementById('f-commission').value) || 0,
+    modelId,
+    ruleChecklist,
+    ruleAdherence,
+    model: document.getElementById('f-model').value.trim(),
+    session: document.getElementById('f-session').value,
+    timeframe: document.getElementById('f-timeframe').value,
+    bias: document.getElementById('f-bias').value,
+    keyLevels: document.getElementById('f-levels').value.trim(),
+    narrative: document.getElementById('f-narrative').value.trim(),
+    lessons: document.getElementById('f-lessons').value.trim(),
+    preEmotion: selectedEmo('pre'),
+    midEmotion: selectedEmo('mid'),
+    postEmotion: selectedEmo('post'),
+    confidence: parseInt(document.getElementById('f-confidence').value),
+    discipline: parseInt(document.getElementById('f-discipline').value),
+    ruleViolations: violations,
+    screenshots: includeAll ? [...pendingScreens] : [],
+    tags: [...tagState]
+  };
+  return t;
+}
+function resetForm(){
+  editingId = null;
+  document.getElementById('tradeFormTitle').textContent = 'Log a trade';
+  const now = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  document.getElementById('f-date').value = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
+  document.getElementById('f-time').value = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  document.getElementById('f-direction').value = 'long';
+  ['f-entry','f-stop','f-target','f-exit'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('f-contracts').value = 1;
+  document.getElementById('f-commission').value = 0;
+  document.getElementById('f-model').value = '';
+  document.getElementById('f-model-select').value = '';
+  document.getElementById('f-model-freeform').value = '';
+  document.getElementById('f-model-freeform').style.display = 'none';
+  document.getElementById('modelRulesBox').style.display = 'none';
+  document.getElementById('modelRulesChecklist').innerHTML = '';
+  document.getElementById('modelRulesAdherence').textContent = '';
+  document.getElementById('f-session').value = 'NY AM';
+  document.getElementById('f-timeframe').value = '5m';
+  document.getElementById('f-bias').value = 'neutral';
+  document.getElementById('f-levels').value = '';
+  document.getElementById('f-narrative').value = '';
+  document.getElementById('f-lessons').value = '';
+  document.getElementById('f-confidence').value = 5; document.getElementById('confVal').textContent = '5/10'; setSliderFill(document.getElementById('f-confidence'));
+  document.getElementById('f-discipline').value = 5; document.getElementById('discVal').textContent = '5/10'; setSliderFill(document.getElementById('f-discipline'));
+  document.querySelectorAll('.emotion-grid .emo').forEach(e => e.classList.remove('selected'));
+  document.querySelectorAll('#ruleViolations input').forEach(i => i.checked = false);
+  pendingScreens = []; renderScreenshots();
+  tagState.clear(); renderTags();
+  updateCalc();
+}
+function fillForm(t){
+  editingId = t.id;
+  document.getElementById('tradeFormTitle').textContent = 'Edit trade';
+  document.getElementById('f-date').value = t.date || '';
+  document.getElementById('f-time').value = t.time || '';
+  document.getElementById('f-direction').value = t.direction || 'long';
+  document.getElementById('f-entry').value = t.entry ?? '';
+  document.getElementById('f-stop').value = t.stop ?? '';
+  document.getElementById('f-target').value = t.target ?? '';
+  document.getElementById('f-exit').value = t.exit ?? '';
+  document.getElementById('f-contracts').value = t.contracts ?? 1;
+  document.getElementById('f-commission').value = t.commission ?? 0;
+  document.getElementById('f-model').value = t.model || '';
+  // Rehydrate model dropdown + rule checklist
+  populateModelSelect();
+  const sel = document.getElementById('f-model-select');
+  if (t.modelId && models.find(m => m.id === t.modelId)){
+    sel.value = t.modelId;
+    document.getElementById('f-model-freeform').style.display = 'none';
+  } else if (t.model && COMMON_PLAYBOOKS.includes(t.model)){
+    sel.value = '__preset__' + t.model;
+    document.getElementById('f-model-freeform').style.display = 'none';
+  } else if (t.model){
+    sel.value = '__free__';
+    document.getElementById('f-model-freeform').style.display = 'block';
+    document.getElementById('f-model-freeform').value = t.model;
+  } else {
+    sel.value = '';
+  }
+  onModelSelectChange();
+  // Tick the rules that were followed
+  if (t.ruleChecklist){
+    document.querySelectorAll('#modelRulesChecklist input').forEach(cb => {
+      cb.checked = !!t.ruleChecklist[cb.dataset.rule];
+    });
+    updateAdherence();
+  }
+  document.getElementById('f-session').value = t.session || 'NY AM';
+  document.getElementById('f-timeframe').value = t.timeframe || '5m';
+  document.getElementById('f-bias').value = t.bias || 'neutral';
+  document.getElementById('f-levels').value = t.keyLevels || '';
+  document.getElementById('f-narrative').value = t.narrative || '';
+  document.getElementById('f-lessons').value = t.lessons || '';
+  document.getElementById('f-confidence').value = t.confidence || 5; document.getElementById('confVal').textContent = (t.confidence||5)+'/10'; setSliderFill(document.getElementById('f-confidence'));
+  document.getElementById('f-discipline').value = t.discipline || 5; document.getElementById('discVal').textContent = (t.discipline||5)+'/10'; setSliderFill(document.getElementById('f-discipline'));
+  ['pre','mid','post'].forEach(phase => {
+    const v = t[phase+'Emotion'];
+    document.querySelectorAll(`.emotion-grid[data-emo="${phase}"] .emo`).forEach(el => {
+      el.classList.toggle('selected', el.dataset.value === v);
+    });
+  });
+  document.querySelectorAll('#ruleViolations input').forEach(i => i.checked = (t.ruleViolations||[]).includes(i.value));
+  pendingScreens = [...(t.screenshots||[])]; renderScreenshots();
+  tagState.clear(); (t.tags||[]).forEach(x => tagState.add(x)); renderTags();
+  updateCalc();
+}
+
+document.getElementById('btnClearForm').addEventListener('click', () => { resetForm(); toast('Form cleared', 'info'); });
+document.getElementById('btnSaveTrade').addEventListener('click', () => {
+  const t = readForm(true);
+  if (!t.entry || !t.exit){ toast('Entry and exit are required', 'err'); return; }
+  if (!t.date){ toast('Pick a date', 'err'); return; }
+  t.pnl = computePnL(t);
+  t.ticks = computeTicks(t);
+  t.rMultiple = computeR(t);
+  t.outcome = outcome(t);
+  if (editingId){
+    const idx = trades.findIndex(x => x.id === editingId);
+    if (idx >= 0) trades[idx] = { ...trades[idx], ...t, id: editingId };
+    editingId = null;
+  } else {
+    t.id = uid();
+    t.createdAt = new Date().toISOString();
+    trades.push(t);
+  }
+  saveJSON(LS_TRADES, trades);
+  toast('Trade saved', 'ok');
+  resetForm();
+  go('journal');
+});
+
+/* =========================================================================
+   VOICE RECOGNITION (Web Speech API)
+   ========================================================================= */
+const TRADING_DICTIONARY = [
+  // ========== ICT / SMC CORE STRUCTURE ==========
+  [/\b(fair\s*value\s*gap(?:s)?|f\.?v\.?g\.?)\b/gi, 'FVG'],
+  [/\b(inverse\s*fair\s*value\s*gap|inverse\s*f\.?v\.?g|i\.?f\.?v\.?g)\b/gi, 'IFVG'],
+  [/\b(volume\s*imbalance|v\.?i)\b/gi, 'volume imbalance'],
+  [/\b(liquidity\s*void)\b/gi, 'liquidity void'],
+  [/\b(new\s*day\s*opening\s*gap|n\.?d\.?o\.?g)\b/gi, 'NDOG'],
+  [/\b(new\s*week\s*opening\s*gap|n\.?w\.?o\.?g)\b/gi, 'NWOG'],
+  [/\b(balanced\s*price\s*range|b\.?p\.?r)\b/gi, 'BPR'],
+  [/\b(order\s*block(?:s)?|o\.?b)\b/gi, 'OB'],
+  [/\b(bullish\s*order\s*block|bullish\s*ob)\b/gi, 'bullish OB'],
+  [/\b(bearish\s*order\s*block|bearish\s*ob)\b/gi, 'bearish OB'],
+  [/\b(rejection\s*block(?:s)?|r\.?b)\b/gi, 'RB'],
+  [/\b(breaker\s*block(?:s)?|b\.?b)\b/gi, 'breaker block'],
+  [/\b(mitigation\s*block|m\.?b)\b/gi, 'mitigation block'],
+  [/\b(propulsion\s*block)\b/gi, 'propulsion block'],
+  [/\b(vacuum\s*block)\b/gi, 'vacuum block'],
+
+  // ========== STRUCTURE / MARKET STRUCTURE SHIFTS ==========
+  [/\b(break\s*of\s*structure|b\.?o\.?s)\b/gi, 'BOS'],
+  [/\b(market\s*structure\s*shift|m\.?s\.?s)\b/gi, 'MSS'],
+  [/\b(change\s*of\s*character|c\.?h\.?o\.?c\.?h|chalk|choch)\b/gi, 'CHoCH'],
+  [/\b(shift\s*in\s*market\s*structure|s\.?m\.?s)\b/gi, 'SMS'],
+  [/\b(higher\s*high(?:s)?|h\.?h)\b/gi, 'HH'],
+  [/\b(higher\s*low(?:s)?|h\.?l)\b/gi, 'HL'],
+  [/\b(lower\s*high(?:s)?|l\.?h)\b/gi, 'LH'],
+  [/\b(lower\s*low(?:s)?|l\.?l)\b/gi, 'LL'],
+  [/\b(equal\s*high(?:s)?|e\.?q\.?h)\b/gi, 'EQH'],
+  [/\b(equal\s*low(?:s)?|e\.?q\.?l)\b/gi, 'EQL'],
+  [/\b(swing\s*high(?:s)?)\b/gi, 'swing high'],
+  [/\b(swing\s*low(?:s)?)\b/gi, 'swing low'],
+
+  // ========== LIQUIDITY ==========
+  [/\b(liquidity\s*sweep|liq\s*sweep|stop\s*run|stop\s*hunt|liquidity\s*grab|liq\s*grab)\b/gi, 'liquidity sweep'],
+  [/\b(buy\s*side\s*liquidity|buyside\s*liquidity|b\.?s\.?l)\b/gi, 'BSL'],
+  [/\b(sell\s*side\s*liquidity|sellside\s*liquidity|s\.?s\.?l)\b/gi, 'SSL'],
+  [/\b(external\s*range\s*liquidity|e\.?r\.?l)\b/gi, 'ERL'],
+  [/\b(internal\s*range\s*liquidity|i\.?r\.?l)\b/gi, 'IRL'],
+  [/\b(draw\s*on\s*liquidity|d\.?o\.?l)\b/gi, 'draw on liquidity'],
+  [/\b(buy\s*side\s*imbalance|b\.?i\.?s\.?i)\b/gi, 'BISI'],
+  [/\b(sell\s*side\s*imbalance|s\.?i\.?b\.?i)\b/gi, 'SIBI'],
+  [/\b(turtle\s*soup)\b/gi, 'Turtle Soup'],
+
+  // ========== KEY LEVELS / REFERENCE POINTS ==========
+  [/\b(previous\s*day\s*high|p\.?d\.?h)\b/gi, 'PDH'],
+  [/\b(previous\s*day\s*low|p\.?d\.?l)\b/gi, 'PDL'],
+  [/\b(previous\s*week\s*high|p\.?w\.?h)\b/gi, 'PWH'],
+  [/\b(previous\s*week\s*low|p\.?w\.?l)\b/gi, 'PWL'],
+  [/\b(previous\s*month\s*high|p\.?m\.?h)\b/gi, 'PMH'],
+  [/\b(previous\s*month\s*low|p\.?m\.?l)\b/gi, 'PML'],
+  [/\b(daily\s*high)\b/gi, 'daily high'],
+  [/\b(daily\s*low)\b/gi, 'daily low'],
+  [/\b(weekly\s*open)\b/gi, 'weekly open'],
+  [/\b(daily\s*open)\b/gi, 'daily open'],
+  [/\b(midnight\s*open|m\.?n\.?o)\b/gi, 'midnight open'],
+
+  // ========== ICT SETUPS & CONCEPTS ==========
+  [/\b(opening\s*range\s*breakout|o\.?r\.?b)\b/gi, 'ORB'],
+  [/\b(silver\s*bullet|s\.?b(?:\s+setup)?)\b/gi, 'Silver Bullet'],
+  [/\b(judas\s*swing)\b/gi, 'Judas Swing'],
+  [/\b(opening\s*range\s*gap|o\.?r\.?g)\b/gi, 'ORG'],
+  [/\b(power\s*of\s*three|power\s*of\s*3|po3)\b/gi, 'PO3'],
+  [/\b(accumulation\s*manipulation\s*distribution|a\.?m\.?d)\b/gi, 'AMD'],
+  [/\b(optimal\s*trade\s*entry|o\.?t\.?e)\b/gi, 'OTE'],
+  [/\b(premium\s*discount|p\.?d\s*array|pd\s*array)\b/gi, 'PD array'],
+  [/\b(interbank\s*price\s*delivery\s*algorithm|i\.?p\.?d\.?a)\b/gi, 'IPDA'],
+  [/\b(market\s*maker\s*buy\s*model|m\.?m\.?b\.?m)\b/gi, 'MMBM'],
+  [/\b(market\s*maker\s*sell\s*model|m\.?m\.?s\.?m|m\.?m\.?x\.?m)\b/gi, 'MMXM'],
+  [/\b(smart\s*money\s*technique|s\.?m\.?t(?:\s+divergence)?)\b/gi, 'SMT'],
+  [/\b(kill\s*zone)\b/gi, 'killzone'],
+  [/\b(london\s*open)\b/gi, 'London open'],
+  [/\b(london\s*kill\s*zone|l\.?k\.?z)\b/gi, 'London killzone'],
+  [/\b(new\s*york\s*open|ny\s*open)\b/gi, 'NY open'],
+  [/\b(new\s*york\s*a\.?m|ny\s*a\.?m)\b/gi, 'NY AM'],
+  [/\b(new\s*york\s*p\.?m|ny\s*p\.?m)\b/gi, 'NY PM'],
+  [/\b(asian\s*session|asia\s*session)\b/gi, 'Asia session'],
+
+  // ========== STANDARD DEVIATION / RANGE / VOLATILITY ==========
+  [/\b(standard\s*deviation(?:s)?|std\s*dev(?:s)?|s\.?t\.?d\.?v|s\.?t\.?d)\b/gi, 'standard deviation'],
+  [/\b(one\s*s\.?d|1\s*s\.?d|1\s*std|first\s*deviation|1\s*dev)\b/gi, '1 SD'],
+  [/\b(two\s*s\.?d|2\s*s\.?d|2\s*std|second\s*deviation|2\s*dev)\b/gi, '2 SD'],
+  [/\b(three\s*s\.?d|3\s*s\.?d|3\s*std|third\s*deviation|3\s*dev)\b/gi, '3 SD'],
+  [/\b(average\s*daily\s*range|a\.?d\.?r)\b/gi, 'ADR'],
+  [/\b(average\s*true\s*range|a\.?t\.?r)\b/gi, 'ATR'],
+  [/\b(initial\s*balance|i\.?b)\b/gi, 'IB'],
+  [/\b(volume\s*profile)\b/gi, 'volume profile'],
+  [/\b(value\s*area\s*high|v\.?a\.?h)\b/gi, 'VAH'],
+  [/\b(value\s*area\s*low|v\.?a\.?l)\b/gi, 'VAL'],
+  [/\b(point\s*of\s*control|p\.?o\.?c)\b/gi, 'POC'],
+
+  // ========== TIMEFRAMES ==========
+  [/\b(high\s*time\s*frame|h\.?t\.?f)\b/gi, 'HTF'],
+  [/\b(low\s*time\s*frame|l\.?t\.?f)\b/gi, 'LTF'],
+  [/\b(medium\s*time\s*frame|m\.?t\.?f)\b/gi, 'MTF'],
+  [/\b(daily\s*chart|daily\s*tf|1d\s*chart)\b/gi, 'daily'],
+  [/\b(weekly\s*chart|weekly\s*tf|1w\s*chart)\b/gi, 'weekly'],
+  [/\b(monthly\s*chart|monthly\s*tf)\b/gi, 'monthly'],
+  [/\b(four\s*hour|4\s*hour|4h)\b/gi, '4H'],
+  [/\b(one\s*hour|1\s*hour|1h)\b/gi, '1H'],
+  [/\b(fifteen\s*minute|15\s*minute|15m)\b/gi, '15m'],
+  [/\b(five\s*minute|5\s*minute|5m)\b/gi, '5m'],
+  [/\b(one\s*minute|1\s*minute|1m)\b/gi, '1m'],
+
+  // ========== INSTRUMENTS ==========
+  [/\b(and\s*q|nq|n\.?q|nasdaq(?:\s+futures)?)\b/gi, 'NQ'],
+  [/\b(e\.?s(?:\s+futures)?|s\.?n\.?p\s*futures|s&p\s*futures)\b/gi, 'ES'],
+  [/\b(y\.?m(?:\s+futures)?|dow\s*futures)\b/gi, 'YM'],
+  [/\b(r\.?t\.?y|russell\s*futures)\b/gi, 'RTY'],
+  [/\b(d\.?x\.?y|dollar\s*index|u\.?s\.?d\s*index)\b/gi, 'DXY'],
+  [/\b(s\s*p\s*x|s&p\s*500|spx)\b/gi, 'SPX'],
+
+  // ========== INDICATORS & TOOLS ==========
+  [/\b(v\.?w\.?a\.?p)\b/gi, 'VWAP'],
+  [/\b(vwap\s*reclaim)\b/gi, 'VWAP reclaim'],
+  [/\b(e\.?m\.?a|exponential\s*moving\s*average)\b/gi, 'EMA'],
+  [/\b(s\.?m\.?a|simple\s*moving\s*average)\b/gi, 'SMA'],
+  [/\b(r\.?s\.?i|relative\s*strength\s*index)\b/gi, 'RSI'],
+  [/\b(m\.?a\.?c\.?d)\b/gi, 'MACD'],
+  [/\b(bollinger\s*bands?|b\.?b)\b/gi, 'Bollinger bands'],
+  [/\b(fib(?:onacci)?\s*retrace(?:ment)?)\b/gi, 'Fib retracement'],
+  [/\b(fib(?:onacci)?\s*extension(?:s)?)\b/gi, 'Fib extension'],
+
+  // ========== TRADING ACTIONS ==========
+  [/\b(long(?:ed)?\s*it|went\s*long|going\s*long|got\s*long|bought\s*it)\b/gi, 'went long'],
+  [/\b(shorted\s*it|short(?:ed)?\s*it|went\s*short|going\s*short|got\s*short|sold\s*short)\b/gi, 'went short'],
+  [/\b(took\s*profit|t\.?p(?:\s+hit)?|target\s*hit)\b/gi, 'took profit'],
+  [/\b(stopped\s*out|s\.?l(?:\s+hit)?|stop\s*hit)\b/gi, 'stopped out'],
+  [/\b(scaled\s*in|scaling\s*in)\b/gi, 'scaled in'],
+  [/\b(scaled\s*out|scaling\s*out)\b/gi, 'scaled out'],
+  [/\b(moved\s*to\s*breakeven|moved\s*to\s*b\.?e|moved\s*stop\s*to\s*b\.?e)\b/gi, 'moved to breakeven'],
+  [/\b(trail(?:ed|ing)?\s*the\s*stop|trail(?:ed|ing)?\s*stop)\b/gi, 'trailed the stop'],
+
+  // ========== RISK / PSYCHOLOGY / PERFORMANCE ==========
+  [/\b(r(?:isk)?\s*to\s*reward|risk\s*reward|r:?r|r\s*multiple)\b/gi, 'R:R'],
+  [/\b(p\s*and\s*l|p\s*&\s*l|p\.?n\.?l|pnl)\b/gi, 'PnL'],
+  [/\b(win\s*rate|w\.?r)\b/gi, 'win rate'],
+  [/\b(f\.?o\.?m\.?o)\b/gi, 'FOMO'],
+  [/\b(revenge\s*trade|revenge\s*trading)\b/gi, 'revenge trade'],
+  [/\b(tilt(?:ed)?)\b/gi, 'tilted'],
+  [/\b(over\s*leveraged|overleveraged)\b/gi, 'over-leveraged'],
+
+  // ========== POINTS / TICKS / HANDLES ==========
+  [/\b(ticks?)\b/gi, 'ticks'],
+  [/\b(handles?)\b/gi, 'handles'],
+  [/\b(point(?:s)?)\b/gi, 'points'],
+];
+
+// Acronyms that should always be UPPERCASE regardless of how they slipped in
+const ACRONYM_UPPER = /\b(fvg|ifvg|orb|bos|choch|mss|sms|nwog|ndog|bpr|ob|rb|bb|mmxm|mmbm|htf|ltf|mtf|ote|vwap|ema|sma|rsi|macd|nq|es|ym|rty|dxy|spx|pdh|pdl|pwh|pwl|pmh|pml|bsl|ssl|erl|irl|bisi|sibi|smt|ipda|po3|amd|adr|atr|vah|val|poc|sd|pnl|tp|sl|mno|ib|dol|lkz)\b/g;
+
+function applyTradingDictionary(text){
+  let out = text;
+  TRADING_DICTIONARY.forEach(([re, repl]) => { out = out.replace(re, repl); });
+  out = out.replace(ACRONYM_UPPER, m => m.toUpperCase());
+  // Capitalize CHoCH properly
+  out = out.replace(/\bCHOCH\b/g, 'CHoCH');
+  return out;
+}
+
+let recog = null, recogTarget = null, interimBuffer = '';
+function initRecognition(){
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) return null;
+  const r = new SR();
+  r.continuous = true;
+  r.interimResults = true;
+  r.lang = 'en-US';
+  r.onresult = ev => {
+    let finalT = '', interim = '';
+    for (let i = ev.resultIndex; i < ev.results.length; i++){
+      const res = ev.results[i];
+      if (res.isFinal) finalT += res[0].transcript + ' ';
+      else interim += res[0].transcript;
+    }
+    if (finalT){
+      const clean = applyTradingDictionary(finalT.trim()) + ' ';
+      const ta = document.getElementById(recogTarget);
+      ta.value = (ta.value ? ta.value.replace(/\s+$/,'') + ' ' : '') + clean;
+      interimBuffer = '';
+    } else {
+      interimBuffer = interim;
+      document.getElementById('voiceStatus').textContent = 'Voice: ' + interim.slice(-60);
+    }
+  };
+  r.onstart = () => document.getElementById('voiceStatus').textContent = 'Voice: listening...';
+  r.onend = () => {
+    document.getElementById('voiceStatus').textContent = 'Voice: idle';
+    document.querySelectorAll('.mic-btn').forEach(b => b.classList.remove('listening'));
+  };
+  r.onerror = e => { toast('Voice error: ' + e.error, 'err'); };
+  return r;
+}
+function toggleMic(targetId, btn){
+  if (!recog){
+    recog = initRecognition();
+    if (!recog){ toast('Web Speech API not available. Try Chrome or Edge.', 'err'); return; }
+  }
+  if (btn.classList.contains('listening')){
+    recog.stop();
+    btn.classList.remove('listening');
+  } else {
+    recogTarget = targetId;
+    try { recog.start(); btn.classList.add('listening'); }
+    catch(e){ /* already started */ }
+  }
+}
+document.getElementById('micNarrative').addEventListener('click', e => toggleMic('f-narrative', e.currentTarget));
+document.getElementById('micLessons').addEventListener('click', e => toggleMic('f-lessons', e.currentTarget));
+
+/* =========================================================================
+   JOURNAL LIST
+   ========================================================================= */
+function populateSessionFilter(){
+  const sel = document.getElementById('filterSession');
+  sel.innerHTML = '<option value="">All sessions</option>' + SESSIONS.map(s => `<option>${s}</option>`).join('');
+}
+populateSessionFilter();
+['filterSearch','filterSession','filterOutcome','filterDirection'].forEach(id => {
+  document.getElementById(id).addEventListener('input', renderJournal);
+});
+
+function renderJournal(){
+  const tbody = document.getElementById('journalBody');
+  const empty = document.getElementById('journalEmpty');
+  const q = document.getElementById('filterSearch').value.toLowerCase().trim();
+  const fs = document.getElementById('filterSession').value;
+  const fo = document.getElementById('filterOutcome').value;
+  const fd = document.getElementById('filterDirection').value;
+
+  const rows = [...trades].sort((a,b) => (b.date+b.time).localeCompare(a.date+a.time));
+  const filtered = rows.filter(t => {
+    if (fs && t.session !== fs) return false;
+    if (fd && t.direction !== fd) return false;
+    if (fo && outcome(t) !== fo) return false;
+    if (q){
+      const hay = [t.model, t.narrative, t.lessons, (t.tags||[]).join(' '), t.keyLevels].join(' ').toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+
+  if (!filtered.length){
+    tbody.innerHTML = '';
+    empty.style.display = trades.length ? 'none' : 'block';
+    if (trades.length) tbody.innerHTML = `<tr><td colspan="13" class="muted" style="text-align:center; padding:20px;">No trades match the filters.</td></tr>`;
+    return;
+  }
+  empty.style.display = 'none';
+  tbody.innerHTML = filtered.map(t => {
+    const p = computePnL(t);
+    const rm = computeR(t);
+    const cls = p>0?'pnl-pos':p<0?'pnl-neg':'';
+    const dirChip = t.direction==='long' ? '<span class="chip green">LONG</span>' : '<span class="chip red">SHORT</span>';
+    const emo = t.preEmotion ? `<span class="chip">${t.preEmotion}</span>` : '';
+    let adhCell = '<span class="muted">—</span>';
+    if (typeof t.ruleAdherence === 'number'){
+      const pct = Math.round(t.ruleAdherence*100);
+      const cls2 = pct===100 ? 'green' : pct>=70 ? 'amber' : 'red';
+      adhCell = `<span class="chip ${cls2}">${pct}%</span>`;
+    }
+    return `<tr data-id="${t.id}" style="cursor:pointer;">
+      <td>${t.date||''}</td>
+      <td>${t.time||''}</td>
+      <td>${dirChip}</td>
+      <td>${escapeHtml(t.model||'—')}</td>
+      <td>${adhCell}</td>
+      <td><span class="badge">${t.session||''}</span></td>
+      <td>${computeTicks(t)}</td>
+      <td class="${cls}">${fmtSigned(p)}</td>
+      <td>${rm.toFixed(2)}R</td>
+      <td>${t.confidence||''}</td>
+      <td>${t.discipline||''}</td>
+      <td>${emo}</td>
+      <td><button class="pill danger" data-del="${t.id}">Delete</button></td>
+    </tr>`;
+  }).join('');
+  tbody.querySelectorAll('tr').forEach(tr => tr.addEventListener('click', e => {
+    if (e.target.dataset.del) return;
+    const t = trades.find(x => x.id === tr.dataset.id);
+    if (t){ fillForm(t); go('new-trade'); }
+  }));
+  tbody.querySelectorAll('[data-del]').forEach(b => b.addEventListener('click', e => {
+    e.stopPropagation();
+    const id = b.dataset.del;
+    if (!confirm('Delete this trade?')) return;
+    trades = trades.filter(x => x.id !== id);
+    saveJSON(LS_TRADES, trades);
+    renderJournal(); renderDashboard();
+    toast('Trade deleted', 'info');
+  }));
+}
+function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* =========================================================================
+   DASHBOARD + CHARTS
+   ========================================================================= */
+let equityChart, sessionChart, emotionChart, dowChart;
+
+function summary(source){
+  const src = source || trades;
+  const n = src.length;
+  const pnl = src.reduce((s,t) => s + computePnL(t), 0);
+  const wins = src.filter(t => computePnL(t) > 0);
+  const losses = src.filter(t => computePnL(t) < 0);
+  const wr = n ? (wins.length / n * 100) : 0;
+  const expectancy = n ? (pnl / n) : 0;
+  const avgR = n ? (src.reduce((s,t) => s + computeR(t), 0) / n) : 0;
+  return { n, pnl, wins: wins.length, losses: losses.length, wr, expectancy, avgR };
+}
+
+function tradesInDashWindow(source, tf){
+  const arr = source || trades;
+  if (!tf || tf === 'all') return arr.slice();
+  const now = new Date();
+  let cutoff = null;
+  if (tf === 'daily'){
+    cutoff = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+  } else if (tf === 'weekly'){
+    cutoff = new Date(now); cutoff.setDate(cutoff.getDate() - 7);
+  } else if (tf === 'monthly'){
+    cutoff = new Date(now); cutoff.setDate(cutoff.getDate() - 30);
+  } else {
+    return arr.slice();
+  }
+  return arr.filter(t => {
+    if (!t.date) return false;
+    const d = new Date((t.date || '') + 'T' + (t.time || '00:00') + ':00');
+    if (isNaN(d.getTime())) return false;
+    return d >= cutoff;
+  });
+}
+
+function renderDashboard(){
+  const view = tradesInDashWindow(trades, dashTf);
+  const s = summary(view);
+  const pnlEl = document.getElementById('stat-pnl');
+  pnlEl.textContent = fmtSigned(s.pnl);
+  pnlEl.className = 'value ' + (s.pnl>0?'green':s.pnl<0?'red':'');
+  document.getElementById('stat-trades').textContent = `${s.n} trade${s.n===1?'':'s'}`;
+  document.getElementById('stat-wr').textContent = s.wr.toFixed(1) + '%';
+  document.getElementById('stat-wl').textContent = `${s.wins}W / ${s.losses}L`;
+  document.getElementById('stat-exp').textContent = fmtSigned(s.expectancy);
+  document.getElementById('stat-r').textContent = (s.avgR>=0?'+':'') + s.avgR.toFixed(2) + 'R';
+
+  // Best model
+  const byModel = groupBy(view, t => t.model || '—');
+  let bestModel = '—', bestExp = -Infinity;
+  Object.entries(byModel).forEach(([m, arr]) => {
+    const exp = arr.reduce((s,t) => s + computePnL(t), 0) / arr.length;
+    if (arr.length >= 2 && exp > bestExp){ bestExp = exp; bestModel = m; }
+  });
+  document.getElementById('stat-best').textContent = 'Best model: ' + bestModel;
+
+  // Equity curve
+  const sorted = [...view].sort((a,b) => (a.date+a.time).localeCompare(b.date+b.time));
+  let eq = 0;
+  const eqData = sorted.map(t => { eq += computePnL(t); return { x: t.date+' '+t.time, y: eq }; });
+  const eqCtx = document.getElementById('equityChart').getContext('2d');
+  const eqEndPositive = eqData.length ? (eqData[eqData.length-1].y >= 0) : true;
+  const eqGradient = eqCtx.createLinearGradient(0, 0, 0, 200);
+  if (eqEndPositive) {
+    eqGradient.addColorStop(0, 'rgba(95,207,138,.32)');
+    eqGradient.addColorStop(0.5, 'rgba(95,207,138,.08)');
+    eqGradient.addColorStop(1, 'rgba(95,207,138,0)');
+  } else {
+    eqGradient.addColorStop(0, 'rgba(239,109,109,.32)');
+    eqGradient.addColorStop(0.5, 'rgba(239,109,109,.08)');
+    eqGradient.addColorStop(1, 'rgba(239,109,109,0)');
+  }
+  if (equityChart) equityChart.destroy();
+  equityChart = new Chart(eqCtx, {
+    type: 'line',
+    data: { labels: eqData.map(d => d.x), datasets: [{
+      label: 'Equity ($)', data: eqData.map(d => d.y),
+      borderColor: eqEndPositive ? '#5fcf8a' : '#ef6d6d',
+      backgroundColor: eqGradient,
+      fill: true, tension: .35, pointRadius: 0, borderWidth: 1.5
+    }]},
+    options: { plugins:{legend:{display:false}}, scales:{ x:{ticks:{color:'#58585d', maxTicksLimit: 6}, grid:{color:'rgba(255,255,255,.04)'}}, y:{ticks:{color:'#58585d'}, grid:{color:'rgba(255,255,255,.04)'}} } }
+  });
+
+  // Session chart
+  const bySession = {};
+  SESSIONS.forEach(s => bySession[s] = 0);
+  view.forEach(t => { bySession[t.session] = (bySession[t.session]||0) + computePnL(t); });
+  const sCtx = document.getElementById('sessionChart').getContext('2d');
+  const winGradient = sCtx.createLinearGradient(0, 0, 0, 200);
+  winGradient.addColorStop(0, 'rgba(95,207,138,.95)');
+  winGradient.addColorStop(1, 'rgba(62,160,105,.45)');
+  const lossGradient = sCtx.createLinearGradient(0, 0, 0, 200);
+  lossGradient.addColorStop(0, 'rgba(239,109,109,.95)');
+  lossGradient.addColorStop(1, 'rgba(200,70,70,.45)');
+  if (sessionChart) sessionChart.destroy();
+  sessionChart = new Chart(sCtx, {
+    type: 'bar',
+    data: { labels: Object.keys(bySession), datasets: [{
+      label: 'P&L', data: Object.values(bySession),
+      backgroundColor: Object.values(bySession).map(v => v>=0 ? winGradient : lossGradient),
+      borderColor: 'transparent',
+      borderRadius: 6,
+      borderWidth: 0
+    }]},
+    options: { plugins:{legend:{display:false}}, scales:{ x:{ticks:{color:'#58585d'}, grid:{display:false}}, y:{ticks:{color:'#58585d'}, grid:{color:'rgba(255,255,255,.04)'}} } }
+  });
+
+  // Model bars (win rate)
+  const mb = document.getElementById('modelBars');
+  mb.innerHTML = '';
+  const sortedModels = Object.entries(byModel).sort((a,b) => b[1].length - a[1].length).slice(0, 8);
+  if (!sortedModels.length){ mb.innerHTML = '<div class="muted">No models yet.</div>'; }
+  sortedModels.forEach(([m, arr]) => {
+    const wins = arr.filter(t => computePnL(t)>0).length;
+    const losses = arr.filter(t => computePnL(t)<0).length;
+    const total = wins + losses || arr.length;
+    const wr = total ? (wins/total*100) : 0;
+    const lr = total ? (losses/total*100) : 0;
+    const row = document.createElement('div');
+    row.className = 'micro-bar';
+    row.innerHTML = `<div class="lbl" title="${escapeHtml(m)}">${escapeHtml(m).slice(0,20)}</div>
+      <div class="prog split">
+        <div class="win" style="width:${wr}%"></div>
+        <div class="loss" style="width:${lr}%"></div>
+      </div>
+      <div class="val">${wr.toFixed(0)}% · ${arr.length}</div>`;
+    mb.appendChild(row);
+  });
+
+  // Emotion scatter — colored by outcome (green win / red loss / grey breakeven)
+  const winPts = [], lossPts = [], bePts = [];
+  view.forEach(t => {
+    const pnl = computePnL(t);
+    const pt = { x: t.confidence||5, y: pnl, emo: t.preEmotion || 'Unlabeled' };
+    if (pnl > 0) winPts.push(pt);
+    else if (pnl < 0) lossPts.push(pt);
+    else bePts.push(pt);
+  });
+  const eCtx = document.getElementById('emotionChart').getContext('2d');
+  if (emotionChart) emotionChart.destroy();
+  emotionChart = new Chart(eCtx, {
+    type: 'scatter',
+    data: { datasets: [
+      { label: 'Wins',       data: winPts,  backgroundColor: 'rgba(95,207,138,.85)',  borderColor: '#5fcf8a', pointRadius: 5, pointHoverRadius: 7 },
+      { label: 'Losses',     data: lossPts, backgroundColor: 'rgba(239,109,109,.85)', borderColor: '#ef6d6d', pointRadius: 5, pointHoverRadius: 7 },
+      { label: 'Breakeven',  data: bePts,   backgroundColor: 'rgba(160,160,168,.7)',  borderColor: '#a0a0a8', pointRadius: 4, pointHoverRadius: 6 }
+    ]},
+    options: {
+      plugins:{
+        legend:{ labels:{ color:'#b5b5bd', boxWidth:10, font:{size:11}, usePointStyle:true } },
+        tooltip:{
+          callbacks: {
+            label: (ctx) => {
+              const p = ctx.raw;
+              return `${p.emo} · conf ${p.x} · ${p.y>=0?'+':''}$${p.y.toFixed(0)}`;
+            }
+          }
+        }
+      },
+      scales:{
+        x:{ title:{display:true, text:'Confidence', color:'#58585d'}, min:0, max:10, ticks:{color:'#58585d'}, grid:{color:'rgba(255,255,255,.04)'} },
+        y:{ title:{display:true, text:'P&L ($)', color:'#58585d'}, ticks:{color:'#58585d'}, grid:{color:'rgba(255,255,255,.04)'} }
+      }
+    }
+  });
+}
+function groupBy(arr, keyFn){
+  return arr.reduce((m,x) => { const k = keyFn(x) || '—'; (m[k] = m[k]||[]).push(x); return m; }, {});
+}
+
+// Dashboard timeframe pill handlers
+document.querySelectorAll('#dashTfRow [data-dashtf]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    dashTf = btn.dataset.dashtf;
+    document.querySelectorAll('#dashTfRow [data-dashtf]').forEach(b => {
+      b.classList.toggle('active', b.dataset.dashtf === dashTf);
+    });
+    renderDashboard();
+  });
+});
+
+/* =========================================================================
+   MODELS (user playbooks)
+   ========================================================================= */
+function splitLines(s){
+  return (s||'').split('\n').map(x => x.trim()).filter(Boolean);
+}
+const COMMON_PLAYBOOKS = [
+  'ICT FVG','ORB','Liquidity Sweep','MMXM','Silver Bullet','Turtle Soup',
+  'BOS + OTE','CHoCH Reversal','Opening Drive','VWAP Reclaim','PD Array Inversion'
+];
+function populateModelSelect(){
+  const sel = document.getElementById('f-model-select');
+  const current = sel.value;
+  const myModelsGroup = models.length
+    ? `<optgroup label="My models">${models.map(m => `<option value="${m.id}">${escapeHtml(m.name)}</option>`).join('')}</optgroup>`
+    : '';
+  const commonGroup = `<optgroup label="Common playbooks">${COMMON_PLAYBOOKS.map(p => `<option value="__preset__${p}">${p}</option>`).join('')}</optgroup>`;
+  sel.innerHTML =
+    '<option value="">— Pick a model —</option>' +
+    myModelsGroup +
+    commonGroup +
+    '<option value="__free__">Freeform (type your own)</option>';
+  if ([...sel.options].some(o => o.value === current)) sel.value = current;
+}
+function onModelSelectChange(){
+  const sel = document.getElementById('f-model-select');
+  const ff = document.getElementById('f-model-freeform');
+  const hidden = document.getElementById('f-model');
+  const box = document.getElementById('modelRulesBox');
+  const list = document.getElementById('modelRulesChecklist');
+  const adherence = document.getElementById('modelRulesAdherence');
+
+  if (sel.value === '__free__'){
+    ff.style.display = 'block';
+    hidden.value = ff.value || '';
+    box.style.display = 'none';
+    list.innerHTML = '';
+    adherence.textContent = '';
+    return;
+  }
+  ff.style.display = 'none';
+  if (!sel.value){
+    hidden.value = '';
+    box.style.display = 'none';
+    list.innerHTML = '';
+    adherence.textContent = '';
+    return;
+  }
+  // Preset playbook (no defined rules) — acts like freeform name-only
+  if (sel.value.startsWith('__preset__')){
+    hidden.value = sel.value.replace('__preset__','');
+    box.style.display = 'none';
+    list.innerHTML = '';
+    adherence.textContent = '';
+    return;
+  }
+  const m = models.find(x => x.id === sel.value);
+  if (!m) return;
+  hidden.value = m.name;
+
+  const rules = [...(m.entryRules||[]), ...(m.exitRules||[])];
+  if (!rules.length){
+    box.style.display = 'none';
+    return;
+  }
+  box.style.display = 'block';
+  list.innerHTML = rules.map((r,i) => `
+    <label><input type="checkbox" data-rule="${escapeHtml(r)}"/> ${escapeHtml(r)}</label>
+  `).join('');
+  list.querySelectorAll('input').forEach(cb => cb.addEventListener('change', updateAdherence));
+  updateAdherence();
+}
+function updateAdherence(){
+  const list = document.getElementById('modelRulesChecklist');
+  const all = [...list.querySelectorAll('input')];
+  if (!all.length){ document.getElementById('modelRulesAdherence').textContent = ''; return; }
+  const followed = all.filter(c => c.checked).length;
+  const total = all.length;
+  const pct = Math.round(followed/total*100);
+  const broke = total - followed;
+  const el = document.getElementById('modelRulesAdherence');
+  const color = pct === 100 ? 'var(--green)' : pct >= 70 ? 'var(--amber)' : 'var(--red)';
+  el.innerHTML = `<span style="color:${color}">Adherence: ${pct}% (${followed}/${total})</span>`
+    + (broke ? ` · <span style="color: var(--red)">${broke} rule${broke===1?'':'s'} broken</span>` : '');
+}
+document.getElementById('f-model-select').addEventListener('change', onModelSelectChange);
+document.getElementById('f-model-freeform').addEventListener('input', e => {
+  document.getElementById('f-model').value = e.target.value.trim();
+});
+
+// Models page
+const MODEL_WINDOWS = [
+  { id: '1w', label: '1 week',   days: 7    },
+  { id: '1m', label: '1 month',  days: 30   },
+  { id: '6m', label: '6 months', days: 182  },
+  { id: '1y', label: '1 year',   days: 365  },
+  { id: 'all', label: 'All time', days: null },
+];
+const modelWindowChoice = {}; // modelId -> window id
+const modelBacktests = {};    // modelId -> { loading, windowId, data, error }
+
+function extractJsonObject(text){
+  let t = (text || '').trim();
+  t = t.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/,'').trim();
+  const a = t.indexOf('{');
+  const b = t.lastIndexOf('}');
+  if (a < 0 || b < 0) throw new Error('No JSON object found in response');
+  return JSON.parse(t.slice(a, b+1));
+}
+
+function buildBacktestPrompt(model, win){
+  const ruleSet = {
+    name: model.name,
+    description: model.description || '',
+    sessions: model.sessions || [],
+    timeframes: model.timeframes || [],
+    entryRules: model.entryRules || [],
+    exitRules: model.exitRules || [],
+    invalidation: model.invalidation || '',
+    notes: model.notes || ''
+  };
+  const windowText = win.days == null
+    ? 'ALL AVAILABLE NQ HISTORY (use the last 2 calendar years as a realistic scope)'
+    : `THE LAST ${win.days} DAYS on NQ futures`;
+  return `You are a quantitative NQ (Nasdaq-100 futures) trading analyst.
+
+Simulate a backtest of the trading model defined below over ${windowText}.
+
+Rules you must follow:
+1. Only count setups whose conditions match EVERY entry rule of the model. Do not take any other trades.
+2. Estimate realistic setup frequency based on how strict the rules are and how often such conditions occur on NQ.
+3. Use the exit rules and invalidation to estimate stop-to-target distance and therefore R-multiple outcomes. Assume 1R = distance to invalidation.
+4. Ground estimates in real NQ behavior for the window: volatility regime, session character, news clusters, macro backdrop.
+5. Be conservative and honest. If the rules are vague or extremely rare, say so and return a small trade count.
+
+MODEL DEFINITION (JSON):
+${JSON.stringify(ruleSet, null, 2)}
+
+Respond with ONLY a valid JSON object. No prose, no markdown, no code fence. Use this exact schema:
+{
+  "trades": <integer total simulated trades>,
+  "wins": <integer>,
+  "losses": <integer>,
+  "breakeven": <integer>,
+  "winRate": <number 0-100>,
+  "avgR": <number, e.g. 0.42 means average outcome is +0.42R>,
+  "netR": <number, total R across all simulated trades>,
+  "bestSession": <string, e.g. "London open">,
+  "worstSession": <string>,
+  "summary": <string, 2-3 sentences plain text>,
+  "strengths": [<string>, <string>],
+  "weaknesses": [<string>, <string>],
+  "recommendations": [<string>, <string>]
+}`;
+}
+
+async function runModelBacktest(modelId){
+  const model = models.find(m => m.id === modelId);
+  if (!model){ toast('Model not found', 'err'); return; }
+  if (!settings.apiKey){
+    toast('Set your Anthropic API key in Settings first', 'err');
+    go('settings');
+    return;
+  }
+  const winId = modelWindowChoice[modelId] || '1m';
+  const win = MODEL_WINDOWS.find(w => w.id === winId) || MODEL_WINDOWS[1];
+
+  modelBacktests[modelId] = { loading: true, windowId: winId, data: null, error: null };
+  renderModels();
+
+  try {
+    const prompt = buildBacktestPrompt(model, win);
+    const raw = await callClaude(prompt);
+    const data = extractJsonObject(raw);
+    modelBacktests[modelId] = { loading: false, windowId: winId, data, error: null };
+    toast(`Backtest complete · ${win.label}`, 'ok');
+  } catch (e){
+    modelBacktests[modelId] = { loading: false, windowId: winId, data: null, error: String(e.message||e) };
+    toast('Backtest failed: ' + (e.message||e), 'err');
+  }
+  renderModels();
+}
+
+function tradesForModelInWindow(modelId, windowId){
+  const win = MODEL_WINDOWS.find(w => w.id === windowId) || MODEL_WINDOWS[MODEL_WINDOWS.length-1];
+  const cutoff = win.days == null ? null : (Date.now() - win.days * 24 * 60 * 60 * 1000);
+  return trades.filter(t => {
+    if (t.modelId !== modelId) return false;
+    if (cutoff == null) return true;
+    const ts = new Date((t.date||'') + 'T' + (t.time||'00:00')).getTime();
+    return isFinite(ts) && ts >= cutoff;
+  });
+}
+
+function computeModelStats(ts){
+  const n = ts.length;
+  const wins = ts.filter(t => computePnL(t) > 0).length;
+  const losses = ts.filter(t => computePnL(t) < 0).length;
+  const pnl = ts.reduce((a,t) => a + computePnL(t), 0);
+  const wr = n ? (wins / n * 100) : 0;
+  const avgWin = wins ? ts.filter(t => computePnL(t) > 0).reduce((a,t) => a + computePnL(t), 0) / wins : 0;
+  const avgLoss = losses ? ts.filter(t => computePnL(t) < 0).reduce((a,t) => a + computePnL(t), 0) / losses : 0;
+  const expectancy = n ? pnl / n : 0;
+  const rs = ts.map(t => typeof t.rMultiple === 'number' ? t.rMultiple : null).filter(x => x != null);
+  const avgR = rs.length ? rs.reduce((a,b) => a+b, 0) / rs.length : null;
+  const adhArr = ts.map(t => typeof t.ruleAdherence === 'number' ? t.ruleAdherence : null).filter(x => x != null);
+  const adh = adhArr.length ? adhArr.reduce((a,b)=>a+b, 0) / adhArr.length : null;
+  return { n, wins, losses, pnl, wr, avgWin, avgLoss, expectancy, avgR, adh };
+}
+
+function renderModels(){
+  const list = document.getElementById('modelsList');
+  const empty = document.getElementById('modelsEmpty');
+  if (!models.length){
+    list.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+
+  list.innerHTML = models.map(m => {
+    const winId = modelWindowChoice[m.id] || 'all';
+    const scoped = tradesForModelInWindow(m.id, winId);
+    const s = computeModelStats(scoped);
+    const rules = [...(m.entryRules||[]), ...(m.exitRules||[])];
+    const winLabel = (MODEL_WINDOWS.find(w => w.id === winId) || {}).label || 'All time';
+    return `
+      <div class="card" data-model-card="${m.id}">
+        <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+          <div style="min-width:180px;">
+            <div style="font-size:16px; font-weight:700;">${escapeHtml(m.name)}</div>
+            <div class="muted" style="font-size:12px;">${escapeHtml(m.description||'')}</div>
+          </div>
+          <div class="row" style="gap:4px; flex-wrap:wrap; align-items:center; justify-content:flex-end;">
+            <span class="muted" style="font-size:11px; margin-right:4px; text-transform:uppercase; letter-spacing:.1em;">Timeframe</span>
+            ${MODEL_WINDOWS.map(w => `<button class="pill win-pill ${w.id===winId?'active':''}" data-model="${m.id}" data-window="${w.id}">${w.label}</button>`).join('')}
+            <span style="width:6px;"></span>
+            <button class="pill bt-btn" data-backtest="${m.id}" ${(modelBacktests[m.id]||{}).loading?'disabled':''}>
+              ${((modelBacktests[m.id]||{}).loading)?'Running...':'Backtest'}
+            </button>
+            <span style="width:6px;"></span>
+            <button class="pill" data-edit="${m.id}">Edit</button>
+            <button class="pill danger" data-delete="${m.id}">Delete</button>
+          </div>
+        </div>
+        <div class="row" style="margin-top:10px; gap:6px;">
+          ${(m.sessions||[]).map(x => `<span class="chip blue">${escapeHtml(x)}</span>`).join('')}
+          ${(m.timeframes||[]).map(x => `<span class="chip violet">${escapeHtml(x)}</span>`).join('')}
+        </div>
+
+        <div class="model-stats" style="margin-top:12px;">
+          <div class="muted" style="font-size:10px; text-transform:uppercase; letter-spacing:.14em; margin-bottom:8px;">
+            ${escapeHtml(winLabel)} · ${s.n} trade${s.n===1?'':'s'}
+          </div>
+          <div class="model-stat-grid">
+            <div class="ms"><div class="ms-lbl">Net P&amp;L</div><div class="ms-val ${s.pnl>=0?'pnl-pos':'pnl-neg'}">${fmtSigned(s.pnl)}</div></div>
+            <div class="ms"><div class="ms-lbl">Win rate</div><div class="ms-val">${s.n?s.wr.toFixed(0)+'%':'—'}</div><div class="ms-sub">${s.wins}W / ${s.losses}L</div></div>
+            <div class="ms"><div class="ms-lbl">Expectancy</div><div class="ms-val ${s.expectancy>=0?'pnl-pos':'pnl-neg'}">${s.n?fmtSigned(s.expectancy):'—'}</div><div class="ms-sub">per trade</div></div>
+            <div class="ms"><div class="ms-lbl">Avg R</div><div class="ms-val">${s.avgR==null?'—':s.avgR.toFixed(2)+'R'}</div></div>
+            <div class="ms"><div class="ms-lbl">Avg win</div><div class="ms-val pnl-pos">${s.wins?fmtSigned(s.avgWin):'—'}</div></div>
+            <div class="ms"><div class="ms-lbl">Avg loss</div><div class="ms-val pnl-neg">${s.losses?fmtSigned(s.avgLoss):'—'}</div></div>
+            <div class="ms"><div class="ms-lbl">Adherence</div><div class="ms-val">${s.adh==null?'—':Math.round(s.adh*100)+'%'}</div></div>
+          </div>
+          ${s.n ? `<div class="progress" style="margin-top:10px;">
+            <div class="split-bar">
+              <span class="w" style="width:${(s.wins/s.n*100).toFixed(2)}%"></span>
+              <span class="l" style="width:${(s.losses/s.n*100).toFixed(2)}%"></span>
+            </div>
+          </div>` : ''}
+        </div>
+
+        ${renderBacktestPanel(m, modelBacktests[m.id])}
+
+        ${rules.length ? `<details style="margin-top:12px;">
+          <summary>${rules.length} rule${rules.length===1?'':'s'}</summary>
+          <div style="font-size:12px; margin-top:8px;">
+            ${m.entryRules && m.entryRules.length ? `<div class="muted" style="margin-top:6px;">ENTRY</div>
+              <ul style="margin:4px 0 0 18px; padding:0;">${m.entryRules.map(r => `<li>${escapeHtml(r)}</li>`).join('')}</ul>` : ''}
+            ${m.exitRules && m.exitRules.length ? `<div class="muted" style="margin-top:8px;">EXIT</div>
+              <ul style="margin:4px 0 0 18px; padding:0;">${m.exitRules.map(r => `<li>${escapeHtml(r)}</li>`).join('')}</ul>` : ''}
+            ${m.invalidation ? `<div class="muted" style="margin-top:8px;">INVALIDATION</div><div style="margin-top:2px;">${escapeHtml(m.invalidation)}</div>` : ''}
+            ${m.notes ? `<div class="muted" style="margin-top:8px;">NOTES</div><div style="margin-top:2px; white-space:pre-wrap;">${escapeHtml(m.notes)}</div>` : ''}
+          </div>
+        </details>` : '<div class="muted" style="margin-top:8px; font-size:12px;">No rules defined yet.</div>'}
+      </div>`;
+  }).join('');
+  list.querySelectorAll('[data-edit]').forEach(b => b.addEventListener('click', () => openModelEditor(b.dataset.edit)));
+  list.querySelectorAll('[data-delete]').forEach(b => b.addEventListener('click', () => {
+    if (!confirm('Delete this model? Trades that referenced it will keep the model name as freeform text.')) return;
+    const id = b.dataset.delete;
+    models = models.filter(m => m.id !== id);
+    saveJSON(LS_MODELS, models);
+    renderModels();
+    populateModelSelect();
+    toast('Model deleted', 'info');
+  }));
+  list.querySelectorAll('.win-pill').forEach(b => b.addEventListener('click', () => {
+    modelWindowChoice[b.dataset.model] = b.dataset.window;
+    renderModels();
+  }));
+  list.querySelectorAll('[data-backtest]').forEach(b => b.addEventListener('click', () => {
+    runModelBacktest(b.dataset.backtest);
+  }));
+}
+
+function renderBacktestPanel(model, state){
+  if (!state) return '';
+  const winLabel = (MODEL_WINDOWS.find(w => w.id === state.windowId) || {}).label || '';
+  if (state.loading){
+    return `<div class="backtest-panel loading">
+      <div class="bt-head">
+        <div class="bt-title"><span class="bt-dot"></span>Running backtest · ${escapeHtml(winLabel)}</div>
+      </div>
+      <div class="muted" style="font-size:12px; margin-top:6px;">Claude is simulating trades under your model's rules on NQ. This can take 10–25 seconds.</div>
+    </div>`;
+  }
+  if (state.error){
+    return `<div class="backtest-panel error">
+      <div class="bt-head">
+        <div class="bt-title">Backtest failed</div>
+        <button class="pill" data-backtest="${model.id}">Retry</button>
+      </div>
+      <div class="muted" style="font-size:12px; margin-top:6px;">${escapeHtml(state.error)}</div>
+    </div>`;
+  }
+  const d = state.data || {};
+  const wr = (typeof d.winRate === 'number') ? d.winRate : (d.trades ? (d.wins/d.trades*100) : 0);
+  const trades = d.trades || 0;
+  const wins = d.wins || 0;
+  const losses = d.losses || 0;
+  const be = d.breakeven || 0;
+  const avgR = typeof d.avgR === 'number' ? d.avgR : null;
+  const netR = typeof d.netR === 'number' ? d.netR : null;
+  return `<div class="backtest-panel">
+    <div class="bt-head">
+      <div class="bt-title"><span class="bt-dot done"></span>AI Backtest · ${escapeHtml(winLabel)}</div>
+      <button class="pill bt-btn" data-backtest="${model.id}">Re-run</button>
+    </div>
+    <div class="bt-grid">
+      <div class="ms"><div class="ms-lbl">Sim trades</div><div class="ms-val">${trades}</div><div class="ms-sub">${wins}W / ${losses}L${be?' · '+be+' BE':''}</div></div>
+      <div class="ms"><div class="ms-lbl">Win rate</div><div class="ms-val">${trades?wr.toFixed(0)+'%':'—'}</div></div>
+      <div class="ms"><div class="ms-lbl">Avg R</div><div class="ms-val ${avgR==null?'':avgR>=0?'pnl-pos':'pnl-neg'}">${avgR==null?'—':(avgR>=0?'+':'')+avgR.toFixed(2)+'R'}</div></div>
+      <div class="ms"><div class="ms-lbl">Net R</div><div class="ms-val ${netR==null?'':netR>=0?'pnl-pos':'pnl-neg'}">${netR==null?'—':(netR>=0?'+':'')+netR.toFixed(1)+'R'}</div></div>
+    </div>
+    ${(d.bestSession || d.worstSession) ? `<div class="bt-chips">
+      ${d.bestSession ? `<span class="chip green">Best: ${escapeHtml(d.bestSession)}</span>` : ''}
+      ${d.worstSession ? `<span class="chip red">Worst: ${escapeHtml(d.worstSession)}</span>` : ''}
+    </div>` : ''}
+    ${d.summary ? `<div class="bt-summary">${escapeHtml(d.summary)}</div>` : ''}
+    <div class="bt-insights">
+      ${(d.strengths||[]).length ? `<div class="bt-ins">
+        <div class="bt-ins-lbl up">Strengths</div>
+        <ul>${(d.strengths||[]).map(x => `<li>${escapeHtml(x)}</li>`).join('')}</ul>
+      </div>` : ''}
+      ${(d.weaknesses||[]).length ? `<div class="bt-ins">
+        <div class="bt-ins-lbl down">Weaknesses</div>
+        <ul>${(d.weaknesses||[]).map(x => `<li>${escapeHtml(x)}</li>`).join('')}</ul>
+      </div>` : ''}
+      ${(d.recommendations||[]).length ? `<div class="bt-ins">
+        <div class="bt-ins-lbl">Recommendations</div>
+        <ul>${(d.recommendations||[]).map(x => `<li>${escapeHtml(x)}</li>`).join('')}</ul>
+      </div>` : ''}
+    </div>
+    <div class="muted" style="font-size:11px; margin-top:10px; font-style:italic;">AI-simulated estimate based on your rules and typical NQ behavior. Not a tick-by-tick backtest — treat as directional guidance.</div>
+  </div>`;
+}
+
+function openModelEditor(id){
+  editingModelId = id || null;
+  const editor = document.getElementById('modelEditor');
+  editor.style.display = 'block';
+  document.getElementById('modelEditorTitle').textContent = id ? 'Edit model' : 'New model';
+  const m = id ? models.find(x => x.id === id) : { sessions: [], timeframes: [] };
+  document.getElementById('m-name').value = m.name || '';
+  document.getElementById('m-desc').value = m.description || '';
+  document.getElementById('m-entryRules').value = (m.entryRules||[]).join('\n');
+  document.getElementById('m-exitRules').value = (m.exitRules||[]).join('\n');
+  document.getElementById('m-invalidation').value = m.invalidation || '';
+  document.getElementById('m-notes').value = m.notes || '';
+  renderSessionPicker('m-sessions', m.sessions||[], SESSIONS);
+  renderSessionPicker('m-timeframes', m.timeframes||[], ['1m','2m','3m','5m','15m','1h','4h']);
+  editor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+function renderSessionPicker(containerId, selected, options){
+  const host = document.getElementById(containerId);
+  host.innerHTML = '';
+  options.forEach(opt => {
+    const pill = document.createElement('span');
+    pill.className = 'chip' + (selected.includes(opt) ? ' blue' : '');
+    pill.textContent = opt;
+    pill.style.cursor = 'pointer';
+    pill.addEventListener('click', () => {
+      const idx = selected.indexOf(opt);
+      if (idx >= 0) selected.splice(idx, 1); else selected.push(opt);
+      renderSessionPicker(containerId, selected, options);
+    });
+    host.appendChild(pill);
+  });
+  host.dataset.selected = JSON.stringify(selected);
+}
+function readSelectedFromPicker(containerId){
+  return JSON.parse(document.getElementById(containerId).dataset.selected || '[]');
+}
+
+document.getElementById('btnNewModel').addEventListener('click', () => openModelEditor(null));
+document.getElementById('btnCancelModel').addEventListener('click', () => {
+  document.getElementById('modelEditor').style.display = 'none';
+  editingModelId = null;
+});
+document.getElementById('btnSaveModel').addEventListener('click', () => {
+  const name = document.getElementById('m-name').value.trim();
+  if (!name){ toast('Model needs a name', 'err'); return; }
+  const payload = {
+    name,
+    description: document.getElementById('m-desc').value.trim(),
+    sessions: readSelectedFromPicker('m-sessions'),
+    timeframes: readSelectedFromPicker('m-timeframes'),
+    entryRules: splitLines(document.getElementById('m-entryRules').value),
+    exitRules: splitLines(document.getElementById('m-exitRules').value),
+    invalidation: document.getElementById('m-invalidation').value.trim(),
+    notes: document.getElementById('m-notes').value.trim(),
+  };
+  if (editingModelId){
+    const idx = models.findIndex(m => m.id === editingModelId);
+    if (idx >= 0) models[idx] = { ...models[idx], ...payload };
+  } else {
+    models.push({ id: uid(), createdAt: new Date().toISOString(), ...payload });
+  }
+  saveJSON(LS_MODELS, models);
+  document.getElementById('modelEditor').style.display = 'none';
+  editingModelId = null;
+  renderModels();
+  populateModelSelect();
+  toast('Model saved', 'ok');
+});
+
+/* =========================================================================
+   PATTERN ENGINE
+   ========================================================================= */
+function analyze(arr, keyFn, minN=2){
+  const g = groupBy(arr, keyFn);
+  return Object.entries(g).map(([k, items]) => {
+    const wins = items.filter(t => computePnL(t)>0).length;
+    const pnl = items.reduce((s,t) => s + computePnL(t), 0);
+    return {
+      key: k, n: items.length, wins, losses: items.length - wins,
+      wr: items.length ? wins/items.length*100 : 0,
+      pnl, exp: items.length ? pnl/items.length : 0,
+      avgR: items.length ? items.reduce((s,t)=>s+computeR(t),0)/items.length : 0
+    };
+  }).filter(x => x.n >= minN).sort((a,b) => b.exp - a.exp);
+}
+function tableHTML(rows){
+  if (!rows.length) return '<div class="muted">Not enough data yet.</div>';
+  return `<table><thead><tr><th>Bucket</th><th>n</th><th>WR</th><th>Exp</th><th>Avg R</th><th>P&L</th></tr></thead>
+    <tbody>${rows.map(r => `<tr><td>${escapeHtml(r.key)}</td><td>${r.n}</td><td>${r.wr.toFixed(0)}%</td>
+      <td class="${r.exp>=0?'pnl-pos':'pnl-neg'}">${fmtSigned(r.exp)}</td>
+      <td>${r.avgR.toFixed(2)}R</td>
+      <td class="${r.pnl>=0?'pnl-pos':'pnl-neg'}">${fmtSigned(r.pnl)}</td>
+    </tr>`).join('')}</tbody></table>`;
+}
+function renderPatterns(){
+  const byModel = analyze(trades, t => t.model || '—');
+  const bySession = analyze(trades, t => t.session || '—');
+  const byEmotion = analyze(trades, t => t.preEmotion || 'Unlabeled');
+  document.getElementById('byModelTable').innerHTML = tableHTML(byModel);
+  document.getElementById('bySessionTable').innerHTML = tableHTML(bySession);
+  document.getElementById('byEmotionTable').innerHTML = tableHTML(byEmotion);
+
+  // Violations
+  const vCounts = {};
+  const vPnl = {};
+  trades.forEach(t => (t.ruleViolations||[]).forEach(v => {
+    vCounts[v] = (vCounts[v]||0)+1;
+    vPnl[v] = (vPnl[v]||0) + computePnL(t);
+  }));
+  const vRows = Object.keys(vCounts).map(v => ({ key: v, n: vCounts[v], pnl: vPnl[v], exp: vPnl[v]/vCounts[v], wins: 0, losses: 0, wr: 0, avgR: 0 }));
+  if (!vRows.length) document.getElementById('violationTable').innerHTML = '<div class="muted">No rule violations logged.</div>';
+  else document.getElementById('violationTable').innerHTML = `<table><thead><tr><th>Violation</th><th>Count</th><th>P&L impact</th><th>Avg per trade</th></tr></thead>
+    <tbody>${vRows.sort((a,b)=>a.pnl-b.pnl).map(r => `<tr><td>${escapeHtml(r.key)}</td><td>${r.n}</td>
+      <td class="${r.pnl>=0?'pnl-pos':'pnl-neg'}">${fmtSigned(r.pnl)}</td>
+      <td class="${r.exp>=0?'pnl-pos':'pnl-neg'}">${fmtSigned(r.exp)}</td></tr>`).join('')}</tbody></table>`;
+
+  // Strengths/leaks (by expectancy)
+  const all = [
+    ...byModel.map(r => ({...r, dim:'model'})),
+    ...bySession.map(r => ({...r, dim:'session'})),
+    ...byEmotion.map(r => ({...r, dim:'emotion'})),
+  ].filter(r => r.n >= 3);
+  const strengths = [...all].filter(r => r.exp > 0).sort((a,b) => b.exp - a.exp).slice(0,5);
+  const leaks = [...all].filter(r => r.exp < 0).sort((a,b) => a.exp - b.exp).slice(0,5);
+  document.getElementById('strengthsList').innerHTML = strengths.length ?
+    strengths.map(r => `<div class="micro-bar"><div class="lbl">${r.dim}: ${escapeHtml(r.key)}</div>
+      <div class="val pnl-pos">${fmtSigned(r.exp)}</div>
+      <div class="muted" style="width: 70px; text-align: right; font-size: 11px;">${r.n}t, ${r.wr.toFixed(0)}%</div></div>`).join('')
+    : '<div class="muted">Need more trades to identify strengths (≥3 per bucket).</div>';
+  document.getElementById('leaksList').innerHTML = leaks.length ?
+    leaks.map(r => `<div class="micro-bar"><div class="lbl">${r.dim}: ${escapeHtml(r.key)}</div>
+      <div class="val pnl-neg">${fmtSigned(r.exp)}</div>
+      <div class="muted" style="width: 70px; text-align: right; font-size: 11px;">${r.n}t, ${r.wr.toFixed(0)}%</div></div>`).join('')
+    : '<div class="muted">No clear leaks yet — keep logging.</div>';
+
+  renderDowChart();
+}
+
+function renderDowChart(){
+  const DOW_LABELS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const DOW_FULL   = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+  // JS getDay(): 0=Sun, 1=Mon, ... 6=Sat. Map to our Mon–Sun order.
+  const jsIdxToMonSun = [6, 0, 1, 2, 3, 4, 5];
+  const pnlBuckets = [0,0,0,0,0,0,0];
+  const countBuckets = [0,0,0,0,0,0,0];
+  const winBuckets = [0,0,0,0,0,0,0];
+
+  trades.forEach(t => {
+    if (!t.date) return;
+    const d = new Date(t.date + 'T00:00:00');
+    if (isNaN(d.getTime())) return;
+    const idx = jsIdxToMonSun[d.getDay()];
+    const p = computePnL(t);
+    pnlBuckets[idx] += p;
+    countBuckets[idx] += 1;
+    if (p > 0) winBuckets[idx] += 1;
+  });
+
+  const ctxEl = document.getElementById('dowChart');
+  if (!ctxEl) return;
+  const ctx = ctxEl.getContext('2d');
+
+  const winGradient = ctx.createLinearGradient(0, 0, 0, 200);
+  winGradient.addColorStop(0, 'rgba(95,207,138,.95)');
+  winGradient.addColorStop(1, 'rgba(62,160,105,.45)');
+  const lossGradient = ctx.createLinearGradient(0, 0, 0, 200);
+  lossGradient.addColorStop(0, 'rgba(239,109,109,.95)');
+  lossGradient.addColorStop(1, 'rgba(200,70,70,.45)');
+  const flatGradient = ctx.createLinearGradient(0, 0, 0, 200);
+  flatGradient.addColorStop(0, 'rgba(160,160,168,.55)');
+  flatGradient.addColorStop(1, 'rgba(120,120,130,.25)');
+
+  if (dowChart) dowChart.destroy();
+  dowChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: DOW_LABELS,
+      datasets: [{
+        label: 'Net P&L',
+        data: pnlBuckets,
+        backgroundColor: pnlBuckets.map(v => v > 0 ? winGradient : v < 0 ? lossGradient : flatGradient),
+        borderColor: 'transparent',
+        borderRadius: 6,
+        borderWidth: 0
+      }]
+    },
+    options: {
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            title: (items) => DOW_FULL[items[0].dataIndex],
+            label: (item) => {
+              const i = item.dataIndex;
+              const pnl = pnlBuckets[i];
+              const n = countBuckets[i];
+              const wins = winBuckets[i];
+              const wr = n ? (wins / n * 100).toFixed(0) + '%' : '—';
+              return [
+                `Net P&L: ${fmtSigned(pnl)}`,
+                `Trades: ${n}`,
+                `Win rate: ${wr}`
+              ];
+            }
+          }
+        }
+      },
+      scales: {
+        x: { ticks: { color: '#58585d' }, grid: { display: false } },
+        y: { ticks: { color: '#58585d' }, grid: { color: 'rgba(255,255,255,.04)' } }
+      }
+    }
+  });
+
+  // Caption highlighting best/worst day
+  const capEl = document.getElementById('dowCaption');
+  if (capEl){
+    const nonzero = pnlBuckets.map((v, i) => ({ v, i, n: countBuckets[i] })).filter(o => o.n > 0);
+    if (!nonzero.length){
+      capEl.innerHTML = '<span class="muted">No trades logged yet — data will appear here once you journal trades with dates.</span>';
+    } else {
+      const best = nonzero.reduce((a, b) => b.v > a.v ? b : a, nonzero[0]);
+      const worst = nonzero.reduce((a, b) => b.v < a.v ? b : a, nonzero[0]);
+      capEl.innerHTML = `
+        <span class="pnl-pos">Most profitable: ${DOW_FULL[best.i]}</span> (${fmtSigned(best.v)} · ${best.n} trade${best.n===1?'':'s'})
+        · <span class="pnl-neg">Least profitable: ${DOW_FULL[worst.i]}</span> (${fmtSigned(worst.v)} · ${worst.n} trade${worst.n===1?'':'s'})
+      `;
+    }
+  }
+}
+document.getElementById('btnRefreshPatterns').addEventListener('click', renderPatterns);
+
+/* =========================================================================
+   AI COACH (Claude API)
+   ========================================================================= */
+function buildModelsDigest(){
+  if (!models.length) return 'No models defined yet.';
+  return models.map(m => {
+    const rules = [
+      ...(m.entryRules||[]).map(r => '  [entry] ' + r),
+      ...(m.exitRules||[]).map(r => '  [exit]  ' + r),
+    ];
+    return `• ${m.name}${m.description ? ' — ' + m.description : ''}
+  sessions: ${(m.sessions||[]).join(', ') || 'any'} | timeframes: ${(m.timeframes||[]).join(', ') || 'any'}
+${rules.length ? rules.join('\n') : '  (no rules defined)'}
+${m.invalidation ? '  invalidation: ' + m.invalidation : ''}`;
+  }).join('\n\n');
+}
+
+function buildTradeDigest(maxN = 40){
+  const recent = [...trades].sort((a,b) => (b.date+b.time).localeCompare(a.date+a.time)).slice(0, maxN);
+  const lines = recent.map(t => {
+    let adherenceInfo = '';
+    if (typeof t.ruleAdherence === 'number' && t.ruleChecklist){
+      const broken = Object.entries(t.ruleChecklist).filter(([,v]) => !v).map(([k]) => k);
+      adherenceInfo = ` | model-adherence ${Math.round(t.ruleAdherence*100)}%`
+        + (broken.length ? ` (broke: ${broken.join('; ')})` : '');
+    } else if (t.modelId) {
+      adherenceInfo = ' | model-adherence: not logged';
+    }
+    return `${t.date} ${t.time} | ${t.direction.toUpperCase()} ${t.contracts}c | ${t.model||'-'} | ${t.session} | ${t.timeframe} | `
+      + `entry ${t.entry}, stop ${t.stop}, exit ${t.exit} | `
+      + `ticks ${computeTicks(t)}, ${fmtSigned(computePnL(t))}, ${computeR(t).toFixed(2)}R | `
+      + `emo pre:${t.preEmotion||'-'} mid:${t.midEmotion||'-'} post:${t.postEmotion||'-'} | `
+      + `conf ${t.confidence}/10 disc ${t.discipline}/10`
+      + adherenceInfo + ' | '
+      + (t.ruleViolations && t.ruleViolations.length ? `VIOL: ${t.ruleViolations.join(', ')} | ` : '')
+      + (t.narrative ? `NOTE: ${t.narrative.slice(0,240)}` : '');
+  });
+  const s = summary();
+  const header = `Trader summary: ${s.n} trades, ${s.wins}W/${s.losses}L, WR ${s.wr.toFixed(1)}%, Net ${fmtSigned(s.pnl)}, Expectancy ${fmtSigned(s.expectancy)}, Avg ${s.avgR.toFixed(2)}R.`;
+  const modelsBlock = `\n\nTrader's personal models (playbooks):\n${buildModelsDigest()}`;
+  return header + modelsBlock + '\n\nRecent trades:\n' + lines.join('\n');
+}
+function buildPatternDigest(){
+  const byModel = analyze(trades, t => t.model || '—');
+  const bySession = analyze(trades, t => t.session || '—');
+  const byEmotion = analyze(trades, t => t.preEmotion || 'Unlabeled');
+  const fmt = arr => arr.slice(0,6).map(r => `  ${r.key}: n=${r.n}, wr=${r.wr.toFixed(0)}%, exp=${fmtSigned(r.exp)}, avgR=${r.avgR.toFixed(2)}`).join('\n');
+  return `Model performance:\n${fmt(byModel)||'  (n/a)'}\n\nSession performance:\n${fmt(bySession)||'(n/a)'}\n\nPre-trade emotion performance:\n${fmt(byEmotion)||'(n/a)'}`;
+}
+
+const SYSTEM_PROMPT = `You are an elite performance coach for an NQ (Nasdaq-100 futures) day trader. You speak with the precision of a veteran prop-desk mentor: direct, empirical, ego-free. You do NOT predict markets or give trade signals. You focus exclusively on the trader's PROCESS:
+
+- Adherence to THE TRADER'S OWN PERSONAL MODELS (defined in the "Trader's personal models" section of each message). Each trade includes a "model-adherence" percentage and lists which specific rules were broken. This is the PRIMARY signal — if the trader is losing money on trades where they broke their own rules, that's the most important thing to flag.
+- Emotional regulation across pre/mid/post-trade phases
+- Rule discipline and violation patterns
+- Statistical edges in their data (by model, session, emotion, HTF bias)
+- Execution quality (entries near invalidation, target management, early exits, moved stops)
+
+When the user asks for a review, ground every observation in their actual trade data and their defined models. When a trade went against the trader's own model, call out the specific broken rule by name (e.g., "On 2026-04-14 you broke your Silver Bullet rule 'Within the 10-11am ET window' and it cost you -1R"). Compare expectancy of high-adherence vs low-adherence trades when the data supports it. Be kind but surgical. Prefer fewer, sharper observations over long lists. End with 2-3 concrete, testable process changes for the next session. Use NQ- and ICT-literate vocabulary naturally.
+
+If the trader has not defined any personal models yet, gently suggest they define one in the "My Models" section so you can check adherence.`;
+
+async function callClaude(userMsg, priorMessages=[]){
+  if (!settings.apiKey){ throw new Error('No API key set. Go to Settings.'); }
+  const body = {
+    model: settings.model || 'claude-sonnet-4-6',
+    max_tokens: 1500,
+    system: SYSTEM_PROMPT,
+    messages: [
+      ...priorMessages,
+      { role: 'user', content: userMsg }
+    ]
+  };
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': settings.apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify(body)
+  });
+  if (!res.ok){
+    const txt = await res.text();
+    throw new Error(`API ${res.status}: ${txt.slice(0,400)}`);
+  }
+  const data = await res.json();
+  const text = (data.content || []).filter(c => c.type==='text').map(c => c.text).join('\n');
+  return text;
+}
+
+function renderChat(){
+  const box = document.getElementById('chatBox');
+  if (!chatHistory.length){
+    box.innerHTML = `<div class="ai-msg system">Hi. I'm Edge Companion. I can see a summary of your ${trades.length} trade${trades.length===1?'':'s'}. Ask me anything about your process, or click <b>Full review</b> for a comprehensive analysis.</div>`;
+    return;
+  }
+  box.innerHTML = chatHistory.map(m => `<div class="ai-msg ${m.role}"><b style="opacity:.7; font-size:11px;">${m.role.toUpperCase()}</b><br/>${escapeHtml(m.content)}</div>`).join('');
+  box.scrollTop = box.scrollHeight;
+}
+async function ask(userMsg){
+  if (!userMsg.trim()) return;
+  const digest = `---\nYour journal data (read-only):\n${buildTradeDigest()}\n\nLocal pattern analysis:\n${buildPatternDigest()}\n---\n\nUser question: ${userMsg}`;
+  chatHistory.push({ role: 'user', content: userMsg });
+  renderChat();
+  const box = document.getElementById('chatBox');
+  const loading = document.createElement('div');
+  loading.className = 'ai-msg assistant'; loading.textContent = 'Thinking...';
+  box.appendChild(loading); box.scrollTop = box.scrollHeight;
+
+  try {
+    // Pass prior turns but strip the injected data from them so context stays clean
+    const priorForApi = chatHistory.slice(0, -1).map(m => ({ role: m.role, content: m.content }));
+    const reply = await callClaude(digest, priorForApi);
+    chatHistory.push({ role: 'assistant', content: reply });
+    saveJSON(LS_CHAT, chatHistory);
+    renderChat();
+  } catch (e){
+    loading.remove();
+    chatHistory.push({ role: 'assistant', content: '⚠️ ' + e.message });
+    saveJSON(LS_CHAT, chatHistory);
+    renderChat();
+  }
+}
+document.getElementById('btnAsk').addEventListener('click', () => {
+  const ta = document.getElementById('chatInput');
+  const v = ta.value; ta.value = '';
+  ask(v);
+});
+document.getElementById('chatInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)){ e.preventDefault(); document.getElementById('btnAsk').click(); }
+});
+document.getElementById('btnClearChat').addEventListener('click', () => {
+  if (!confirm('Clear the Edge Companion conversation?')) return;
+  chatHistory = []; saveJSON(LS_CHAT, chatHistory); renderChat();
+});
+document.getElementById('btnFullReview').addEventListener('click', () => {
+  if (!trades.length){ toast('Log some trades first.', 'err'); return; }
+  ask(`Please give me a full performance review. Focus on: (1) my clearest statistical edges vs leaks, (2) what my emotions reveal about when I should NOT trade, (3) any rule-violation patterns that drag my expectancy, and (4) 3 specific process changes for my next session. Ground everything in my actual trade data.`);
+});
+
+/* =========================================================================
+   CHART ANALYSIS (Claude vision)
+   ========================================================================= */
+let analysisMode = 'compare'; // 'individual' or 'compare'
+
+const ANALYSIS_SYSTEM = `You are a veteran NQ (Nasdaq-100 futures) prop-desk mentor reviewing chart screenshots of a trader's executed trades. You read charts the way an ICT/SMC-fluent pro reads them: market structure (BOS, CHoCH, MSS), liquidity (PDH/PDL, session highs/lows, equal highs/lows), premium/discount, FVGs and other PD arrays, and the context of the trader's entry relative to these.
+
+When analyzing a SINGLE image:
+- Identify the setup if you can tell (timeframe, direction, any entry/stop/target annotations).
+- If the user tagged it "What went well" — reinforce the *process* elements that look correct (location, confluence, structure alignment). If something looks off, still flag it.
+- If tagged "What went wrong" — pinpoint the specific execution error you can see (chased entry, entry near invalidation, stop in a liquidity pool, target in a no-trade zone, counter-trend on HTF, etc.).
+- Keep it tight: 3–5 crisp bullets, then one sentence "What to repeat" or "What to change."
+
+When asked to COMPARE multiple images:
+- Identify the common pattern across the trades (same setup type? same mistake? same time of day?).
+- Contrast the wins vs losses: what is mechanically different in the winners' chart location vs the losers'?
+- End with a short "repeat this / avoid this" takeaway list.
+
+Never predict future price. Never recommend specific entries. Focus only on post-trade process review. If the image is unreadable or not a chart, say so plainly and stop.`;
+
+async function callClaudeVision(contentBlocks, system=ANALYSIS_SYSTEM, maxTokens=1500){
+  if (!settings.apiKey){ throw new Error('No API key set. Go to Settings.'); }
+  const body = {
+    model: settings.model || 'claude-sonnet-4-6',
+    max_tokens: maxTokens,
+    system: system,
+    messages: [{ role: 'user', content: contentBlocks }]
+  };
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': settings.apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify(body)
+  });
+  if (!res.ok){
+    const txt = await res.text();
+    throw new Error(`API ${res.status}: ${txt.slice(0,400)}`);
+  }
+  const data = await res.json();
+  return (data.content || []).filter(c => c.type === 'text').map(c => c.text).join('\n');
+}
+
+function dataUrlToImageBlock(dataUrl){
+  // dataUrl looks like "data:image/png;base64,XXXX"
+  const m = /^data:([^;]+);base64,(.*)$/.exec(dataUrl || '');
+  if (!m) return null;
+  return {
+    type: 'image',
+    source: { type: 'base64', media_type: m[1], data: m[2] }
+  };
+}
+
+function renderAnalysisPage(){
+  // Mode pills
+  document.getElementById('btnAnaModeIndividual').classList.toggle('active', analysisMode === 'individual');
+  document.getElementById('btnAnaModeCompare').classList.toggle('active', analysisMode === 'compare');
+  document.getElementById('anaCompareBar').style.display = analysisMode === 'compare' ? '' : 'none';
+
+  // Empty state
+  document.getElementById('anaEmpty').style.display = analysisItems.length ? 'none' : '';
+
+  // Compare result panel
+  const crEl = document.getElementById('anaCompareResult');
+  if (analysisCompareLoading){
+    crEl.style.display = '';
+    crEl.className = 'analysis-result loading';
+    crEl.textContent = 'Claude is looking at all ' + analysisItems.length + ' image' + (analysisItems.length===1?'':'s') + '...';
+  } else if (analysisCompareError){
+    crEl.style.display = '';
+    crEl.className = 'analysis-result error';
+    crEl.textContent = analysisCompareError;
+  } else if (analysisCompareResult){
+    crEl.style.display = '';
+    crEl.className = 'analysis-result';
+    crEl.innerHTML = '<h4>Comparison</h4>' + escapeHtml(analysisCompareResult);
+  } else {
+    crEl.style.display = 'none';
+  }
+
+  // Items grid
+  const host = document.getElementById('anaItems');
+  host.innerHTML = '';
+  analysisItems.forEach(item => {
+    const card = document.createElement('div');
+    card.className = 'ana-card';
+    card.dataset.id = item.id;
+    card.innerHTML = `
+      <div class="ana-thumb" data-open="${item.id}"><img src="${item.dataUrl}" alt=""/></div>
+      <div class="ana-label-row">
+        <button class="ana-label-pill well ${item.label==='well'?'active':''}" data-label="well">What went well</button>
+        <button class="ana-label-pill wrong ${item.label==='wrong'?'active':''}" data-label="wrong">What went wrong</button>
+        <button class="ana-label-pill review ${item.label==='review'?'active':''}" data-label="review">Neutral review</button>
+      </div>
+      <textarea placeholder="Optional note: your thesis, entry/stop/target, what you were thinking..." data-note>${escapeHtml(item.note || '')}</textarea>
+      <div class="ana-card-actions">
+        <div class="left">
+          ${analysisMode === 'individual' ? `<button class="primary" data-analyze>${item.loading ? 'Analyzing...' : (item.analysis ? 'Re-analyze' : 'Analyze')}</button>` : ''}
+        </div>
+        <button class="ana-remove" data-remove>Remove</button>
+      </div>
+      ${item.error ? `<div class="analysis-result error">${escapeHtml(item.error)}</div>` : ''}
+      ${item.loading && !item.error ? `<div class="analysis-result loading">Claude is reviewing this chart...</div>` : ''}
+      ${item.analysis && !item.loading ? `<div class="analysis-result"><h4>Claude's review</h4>${escapeHtml(item.analysis)}</div>` : ''}
+    `;
+    // label pills
+    card.querySelectorAll('.ana-label-pill').forEach(p => p.addEventListener('click', () => {
+      item.label = (item.label === p.dataset.label) ? null : p.dataset.label;
+      renderAnalysisPage();
+    }));
+    // note textarea
+    const ta = card.querySelector('[data-note]');
+    if (ta) ta.addEventListener('input', e => { item.note = e.target.value; });
+    // analyze
+    const analyzeBtn = card.querySelector('[data-analyze]');
+    if (analyzeBtn) analyzeBtn.addEventListener('click', () => analyzeSingleItem(item.id));
+    // remove
+    card.querySelector('[data-remove]').addEventListener('click', () => {
+      analysisItems = analysisItems.filter(x => x.id !== item.id);
+      renderAnalysisPage();
+    });
+    // lightbox
+    card.querySelector('.ana-thumb').addEventListener('click', () => openAnaLightbox(item.dataUrl));
+    host.appendChild(card);
+  });
+}
+
+function labelToPrompt(label){
+  if (label === 'well') return 'I tagged this as "what went well" — reinforce the process strengths you can see.';
+  if (label === 'wrong') return 'I tagged this as "what went wrong" — diagnose the specific execution error(s) you can see.';
+  return 'I want a neutral post-trade review of this chart.';
+}
+
+async function analyzeSingleItem(id){
+  const item = analysisItems.find(x => x.id === id);
+  if (!item) return;
+  if (!settings.apiKey){
+    toast('Set your Anthropic API key in Settings first.', 'err');
+    go('settings');
+    return;
+  }
+  item.loading = true;
+  item.error = null;
+  renderAnalysisPage();
+  try {
+    const imgBlock = dataUrlToImageBlock(item.dataUrl);
+    if (!imgBlock) throw new Error('Could not read image data.');
+    const userText = `${labelToPrompt(item.label)}${item.note ? '\n\nMy note on the trade: ' + item.note : ''}\n\nPlease review the chart image and give me your read. Stay tight — 3–5 bullets plus one takeaway.`;
+    const blocks = [ imgBlock, { type: 'text', text: userText } ];
+    const reply = await callClaudeVision(blocks);
+    item.analysis = reply;
+  } catch (e){
+    item.error = e.message || String(e);
+  } finally {
+    item.loading = false;
+    renderAnalysisPage();
+  }
+}
+
+async function analyzeCompareAll(){
+  if (!analysisItems.length){ toast('Upload at least one image first.', 'err'); return; }
+  if (analysisItems.length < 2){
+    // still useful as a single review — but prompt the user
+    if (!confirm('Compare mode works best with 2+ images. Proceed with just this one?')) return;
+  }
+  if (!settings.apiKey){
+    toast('Set your Anthropic API key in Settings first.', 'err');
+    go('settings');
+    return;
+  }
+  analysisCompareLoading = true;
+  analysisCompareError = null;
+  analysisCompareResult = null;
+  renderAnalysisPage();
+  try {
+    const blocks = [];
+    analysisItems.forEach((item, idx) => {
+      const imgBlock = dataUrlToImageBlock(item.dataUrl);
+      if (!imgBlock) return;
+      const tag = item.label === 'well' ? 'WHAT WENT WELL' : item.label === 'wrong' ? 'WHAT WENT WRONG' : 'REVIEW';
+      blocks.push({ type: 'text', text: `--- Image ${idx+1} · tagged "${tag}"${item.note ? ' · note: ' + item.note : ''} ---` });
+      blocks.push(imgBlock);
+    });
+    blocks.push({ type: 'text', text: `Please compare these ${analysisItems.length} trade screenshots pic-by-pic. Identify the pattern across wins vs losses, contrast the mechanical differences in entry location / structure alignment / confluence, and end with a clear "repeat this / avoid this" takeaway list. Keep it grounded in what you can actually see in the charts.` });
+    const reply = await callClaudeVision(blocks, ANALYSIS_SYSTEM, 2000);
+    analysisCompareResult = reply;
+  } catch (e){
+    analysisCompareError = e.message || String(e);
+  } finally {
+    analysisCompareLoading = false;
+    renderAnalysisPage();
+  }
+}
+
+function ingestAnaFiles(files){
+  const arr = Array.from(files || []).filter(f => f.type && f.type.startsWith('image/'));
+  if (!arr.length) return;
+  let remaining = arr.length;
+  arr.forEach(f => {
+    const r = new FileReader();
+    r.onload = () => {
+      analysisItems.push({
+        id: uid(),
+        dataUrl: r.result,
+        label: null,
+        note: '',
+        mediaType: f.type,
+        analysis: null,
+        loading: false,
+        error: null
+      });
+      remaining--;
+      if (remaining === 0) renderAnalysisPage();
+    };
+    r.readAsDataURL(f);
+  });
+}
+
+// Bind Chart Analysis page events
+document.getElementById('btnAnaModeIndividual').addEventListener('click', () => {
+  analysisMode = 'individual';
+  renderAnalysisPage();
+});
+document.getElementById('btnAnaModeCompare').addEventListener('click', () => {
+  analysisMode = 'compare';
+  renderAnalysisPage();
+});
+document.getElementById('f-ana-upload').addEventListener('change', e => {
+  ingestAnaFiles(e.target.files);
+  e.target.value = '';
+});
+document.getElementById('btnAnaClear').addEventListener('click', () => {
+  if (!analysisItems.length) return;
+  if (!confirm('Clear all uploaded images and results?')) return;
+  analysisItems = [];
+  analysisCompareResult = null;
+  analysisCompareError = null;
+  renderAnalysisPage();
+});
+document.getElementById('btnAnaCompare').addEventListener('click', analyzeCompareAll);
+
+// Drag & drop
+const anaDrop = document.getElementById('anaDropZone');
+anaDrop.addEventListener('click', () => document.getElementById('f-ana-upload').click());
+['dragenter','dragover'].forEach(evt => anaDrop.addEventListener(evt, e => {
+  e.preventDefault(); e.stopPropagation();
+  anaDrop.classList.add('dragover');
+}));
+['dragleave','drop'].forEach(evt => anaDrop.addEventListener(evt, e => {
+  e.preventDefault(); e.stopPropagation();
+  anaDrop.classList.remove('dragover');
+}));
+anaDrop.addEventListener('drop', e => {
+  if (e.dataTransfer && e.dataTransfer.files) ingestAnaFiles(e.dataTransfer.files);
+});
+
+// Paste support (only when analysis page is active)
+window.addEventListener('paste', e => {
+  if (!document.getElementById('page-analysis').classList.contains('active')) return;
+  const items = e.clipboardData && e.clipboardData.items || [];
+  const files = [];
+  for (const it of items){
+    if (it.type && it.type.startsWith('image/')){
+      const blob = it.getAsFile();
+      if (blob) files.push(blob);
+    }
+  }
+  if (files.length) ingestAnaFiles(files);
+});
+
+// Lightbox
+function openAnaLightbox(src){
+  document.getElementById('anaLightboxImg').src = src;
+  document.getElementById('anaLightbox').classList.add('open');
+}
+document.getElementById('anaLightbox').addEventListener('click', () => {
+  document.getElementById('anaLightbox').classList.remove('open');
+});
+
+/* =========================================================================
+   SETTINGS
+   ========================================================================= */
+function renderSettings(){
+  document.getElementById('s-apikey').value = settings.apiKey || '';
+  document.getElementById('s-model').value = settings.model || 'claude-sonnet-4-6';
+  document.getElementById('s-tickSize').value = settings.tickSize;
+  document.getElementById('s-tickValue').value = settings.tickValue;
+  document.getElementById('s-riskDollars').value = settings.riskDollars;
+  document.getElementById('tickValueDisplay').textContent = fmtMoney(settings.tickValue);
+}
+document.getElementById('btnSaveKey').addEventListener('click', () => {
+  settings.apiKey = document.getElementById('s-apikey').value.trim();
+  settings.model = document.getElementById('s-model').value;
+  saveJSON(LS_SETTINGS, settings);
+  toast('API key saved to this browser.', 'ok');
+});
+document.getElementById('btnTestKey').addEventListener('click', async () => {
+  try {
+    const out = await callClaude('Respond with exactly: OK');
+    toast('Connected: ' + out.slice(0,40), 'ok');
+  } catch (e){ toast(e.message.slice(0,120), 'err'); }
+});
+document.getElementById('btnSaveRisk').addEventListener('click', () => {
+  settings.tickSize = parseFloat(document.getElementById('s-tickSize').value) || 0.25;
+  settings.tickValue = parseFloat(document.getElementById('s-tickValue').value) || 5;
+  settings.riskDollars = parseFloat(document.getElementById('s-riskDollars').value) || 200;
+  saveJSON(LS_SETTINGS, settings);
+  document.getElementById('tickValueDisplay').textContent = fmtMoney(settings.tickValue);
+  toast('Risk settings saved.', 'ok');
+});
+document.getElementById('btnExport').addEventListener('click', exportData);
+document.getElementById('btnExport2').addEventListener('click', exportData);
+document.getElementById('btnImport').addEventListener('click', () => document.getElementById('importFile').click());
+document.getElementById('btnImport2').addEventListener('click', () => document.getElementById('importFile').click());
+document.getElementById('importFile').addEventListener('change', importData);
+document.getElementById('btnWipe').addEventListener('click', () => {
+  if (!confirm('This deletes ALL trades, models, chat, and settings from this browser. Continue?')) return;
+  [LS_TRADES, LS_SETTINGS, LS_CHAT, LS_MODELS].forEach(k => localStorage.removeItem(k));
+  trades = []; chatHistory = []; models = [];
+  settings = { apiKey:'', model:'claude-sonnet-4-6', tickSize:0.25, tickValue:5, riskDollars:200 };
+  renderSettings(); renderDashboard(); renderJournal(); renderChat(); populateModelSelect();
+  toast('All data wiped.', 'info');
+});
+
+function exportData(){
+  const blob = new Blob([JSON.stringify({ trades, models, settings: { ...settings, apiKey: '' }, exportedAt: new Date().toISOString() }, null, 2)], { type:'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `nq-journal-${new Date().toISOString().slice(0,10)}.json`;
+  a.click(); URL.revokeObjectURL(a.href);
+  toast(`Exported ${trades.length} trades and ${models.length} models.`, 'ok');
+}
+function importData(e){
+  const f = e.target.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    try {
+      const data = JSON.parse(r.result);
+      if (!Array.isArray(data.trades)) throw new Error('Invalid file');
+      if (!confirm(`Import ${data.trades.length} trades and ${(data.models||[]).length} models? This appends to current data.`)) return;
+      const existing = new Set(trades.map(t => t.id));
+      data.trades.forEach(t => { if (!existing.has(t.id)) trades.push(t); });
+      saveJSON(LS_TRADES, trades);
+      if (Array.isArray(data.models)){
+        const existingModels = new Set(models.map(m => m.id));
+        data.models.forEach(m => { if (!existingModels.has(m.id)) models.push(m); });
+        saveJSON(LS_MODELS, models);
+      }
+      renderJournal(); renderDashboard();
+      toast('Imported.', 'ok');
+    } catch (err){ toast('Import failed: '+err.message, 'err'); }
+  };
+  r.readAsText(f);
+  e.target.value = '';
+}
+
+/* =========================================================================
+   DEMO SEED
+   ========================================================================= */
+function seedDemo(){
+  if (trades.length && !confirm('Append demo trades to your existing data?')) return;
+  const demo = [
+    { date:'2026-04-14', time:'08:35', direction:'long', entry:18250.25, stop:18245.5, target:18265, exit:18263.5, contracts:2, commission:4, model:'Silver Bullet', session:'NY AM', timeframe:'5m', bias:'bullish', keyLevels:'NWOG + Asia low sweep', narrative:'ICT Silver Bullet window. Took FVG after liquidity sweep of Asia low, aligned with HTF bullish bias from daily FVG.', lessons:'Clean execution. Could have scaled out at first FVG target.', preEmotion:'Focused', midEmotion:'Calm', postEmotion:'Confident', confidence:8, discipline:9, ruleViolations:[], tags:['A+','morning'] },
+    { date:'2026-04-14', time:'14:12', direction:'long', entry:18280, stop:18273, target:18300, exit:18274, contracts:2, commission:4, model:'FVG retrace', session:'NY PM', timeframe:'5m', bias:'bullish', keyLevels:'Daily pivot', narrative:'Chased after already-extended move. No clean liquidity sweep first.', lessons:'Dont take FVG after 20+ handle extension. Wait for reset.', preEmotion:'FOMO', midEmotion:'Anxious', postEmotion:'Frustrated', confidence:4, discipline:3, ruleViolations:['Chased entry','No A+ setup'], tags:['afternoon'] },
+    { date:'2026-04-15', time:'09:45', direction:'short', entry:18310, stop:18317, target:18290, exit:18291, contracts:1, commission:2, model:'Liquidity Sweep', session:'NY AM', timeframe:'5m', bias:'bearish', keyLevels:'PDH sweep', narrative:'PDH swept, CHoCH on 1m, took short on 5m FVG retest. Textbook.', lessons:'Great trade. Consider full size next time given A+ setup.', preEmotion:'Confident', midEmotion:'Focused', postEmotion:'Calm', confidence:9, discipline:10, ruleViolations:[], tags:['A+'] },
+    { date:'2026-04-16', time:'10:05', direction:'long', entry:18340, stop:18335, target:18355, exit:18338, contracts:3, commission:6, model:'ORB', session:'NY AM', timeframe:'1m', bias:'neutral', keyLevels:'ORB high', narrative:'Broke ORB high, took breakout. Retest failed, got stopped. Oversized because previous trade was red.', lessons:'Never oversize after a loss. Stick to 2 contracts max.', preEmotion:'Revenge', midEmotion:'Anxious', postEmotion:'Disappointed', confidence:5, discipline:2, ruleViolations:['Oversized position','Revenge trade'], tags:['revenge'] },
+    { date:'2026-04-17', time:'08:50', direction:'short', entry:18290, stop:18297, target:18270, exit:18272, contracts:2, commission:4, model:'Silver Bullet', session:'NY AM', timeframe:'5m', bias:'bearish', keyLevels:'NWOG', narrative:'SB window. Shorted NWOG into bearish daily FVG. Clean.', lessons:'Nothing to change.', preEmotion:'Focused', midEmotion:'Calm', postEmotion:'Confident', confidence:9, discipline:10, ruleViolations:[], tags:['A+','morning'] },
+    { date:'2026-04-17', time:'12:30', direction:'long', entry:18310, stop:18305, target:18325, exit:18308, contracts:2, commission:4, model:'FVG retrace', session:'NY Lunch', timeframe:'5m', bias:'neutral', keyLevels:'lunch chop', narrative:'Took trade during lunch. Low-conviction FVG. Range-bound price.', lessons:'Do not trade lunch session. Period.', preEmotion:'Hopeful', midEmotion:'Anxious', postEmotion:'Frustrated', confidence:4, discipline:4, ruleViolations:['Traded outside session','No A+ setup'], tags:['lunch'] },
+    { date:'2026-04-18', time:'09:15', direction:'long', entry:18265, stop:18259, target:18280, exit:18278, contracts:2, commission:4, model:'BOS + OTE', session:'NY AM', timeframe:'5m', bias:'bullish', keyLevels:'BOS then OTE retrace', narrative:'BOS on 15m, OTE retrace on 5m. Took entry at 70.5% fib.', lessons:'Could have trailed for more.', preEmotion:'Confident', midEmotion:'Focused', postEmotion:'Confident', confidence:8, discipline:9, ruleViolations:[], tags:['A+'] },
+    { date:'2026-04-20', time:'09:32', direction:'short', entry:18402, stop:18409, target:18380, exit:18385, contracts:2, commission:4, model:'MMXM', session:'NY AM', timeframe:'5m', bias:'bearish', keyLevels:'accumulation -> distribution', narrative:'MMXM distribution after morning pump. Shorted the pullback to imbalance.', lessons:'Exited a bit early. Target was cleaner.', preEmotion:'Focused', midEmotion:'Calm', postEmotion:'Confident', confidence:8, discipline:8, ruleViolations:['Exited too early'], tags:['A+'] },
+  ];
+  demo.forEach(t => {
+    t.id = uid(); t.createdAt = new Date().toISOString();
+    t.ticks = computeTicks(t); t.pnl = computePnL(t); t.rMultiple = computeR(t); t.outcome = outcome(t);
+    trades.push(t);
+  });
+  saveJSON(LS_TRADES, trades);
+  toast('Demo data loaded.', 'ok');
+  renderDashboard(); renderJournal(); renderPatterns();
+}
+document.getElementById('btnSeed').addEventListener('click', seedDemo);
+
+/* =========================================================================
+   TOAST
+   ========================================================================= */
+let toastTimer;
+function toast(msg, kind='info'){
+  const t = document.getElementById('toast');
+  t.className = 'toast show ' + kind;
+  t.textContent = msg;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+/* =========================================================================
+   BOOT
+   ========================================================================= */
+populateModelSelect();
+resetForm();
+renderDashboard();
+renderSettings();
+renderChat();
+</script>
+</body>
+</html>
